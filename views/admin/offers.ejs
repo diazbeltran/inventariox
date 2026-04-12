@@ -99,8 +99,7 @@
                             <td><span class="discount-badge"><%= offer.discount %>%</span></td>
                             <td><span class="<%= offer.active ? 'status-active' : 'status-inactive' %>"><%= offer.active ? 'Vigente' : 'Inactiva' %></span></td>
                             <td class="actions">
-                                <button onclick="openEditModal(<%= offer.id %>)"actions">
-                                <button class="btn btn-edit"><i class="fas fa-edit"></i> Editar</button>
+                                <button onclick="openEditModal(<%= offer.id %>)" class="btn btn-edit"><i class="fas fa-edit"></i> Editar</button>
                                 <button onclick="deleteOffer(<%= offer.id %>)" class="btn btn-delete"><i class="fas fa-trash"></i> Eliminar</button>
                             </td>
                         </tr>
