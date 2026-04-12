@@ -136,11 +136,6 @@
                         <input type="checkbox" id="active" name="active" checked> Vigente
                     </label>
                 </div>
-                <div class="form-group">
-                    <label for="active">
-                        <input type="checkbox" id="active" name="active" checked> Vigente
-                    </label>
-                </div>
                 <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Crear Oferta</button>
             </form>
         </div>
@@ -177,11 +172,7 @@
                         <input type="checkbox" id="editActive" name="active"> Vigente
                     </label>
                 </div>
-                <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Actualiz
-                    <label for="description">Descripción</label>
-                    <textarea id="description" name="description" rows="3" placeholder="Ej: Descuento por compra en volumen"></textarea>
-                </div>
-                <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Crear Oferta</button>
+                <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Actualizar Oferta</button>
             </form>
         </div>
     </div>
@@ -221,6 +212,9 @@
             const data = Object.fromEntries(formData);
             data.productId = parseInt(data.productId);
             data.discount = parseInt(data.discount);
+            data.active = document.getElementById('active').checked;
+
+            console.log('Submitting offer:', data);
 
             if (!confirm(`¿Estás seguro de crear esta oferta?`)) {
                 return;
@@ -235,6 +229,7 @@
                 credentials: 'include'
             })
             .then(response => {
+                console.log('Response status:', response.status);
                 if (response.ok) {
                     closeModal();
                     location.reload();
@@ -248,10 +243,76 @@
             });
         });
 
+        function openEditModal(id) {
+            fetch(`/offers/${id}`, {
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(offer => {
+                document.getElementById('editOfferId').value = offer.id;
+                document.getElementById('editProductId').value = offer.productId;
+                document.getElementById('editDiscount').value = offer.discount;
+                document.getElementById('editDescription').value = offer.description;
+                document.getElementById('editActive').checked = offer.active;
+                document.getElementById('editOfferModal').classList.add('active');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al cargar oferta');
+            });
+        }
+
+        function closeEditModal() {
+            document.getElementById('editOfferModal').classList.remove('active');
+        }
+
+        document.getElementById('editOfferForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            const id = data.id;
+            delete data.id;
+            data.productId = parseInt(data.productId);
+            data.discount = parseInt(data.discount);
+            data.active = document.getElementById('editActive').checked;
+
+            console.log('Updating offer:', id, data);
+
+            if (!confirm(`¿Estás seguro de actualizar esta oferta?`)) {
+                return;
+            }
+
+            fetch(`/offers/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data),
+                credentials: 'include'
+            })
+            .then(response => {
+                console.log('Update response status:', response.status);
+                if (response.ok) {
+                    closeEditModal();
+                    location.reload();
+                } else {
+                    alert('Error al actualizar oferta');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al actualizar oferta');
+            });
+        });
+
         window.onclick = function(event) {
             const modal = document.getElementById('offerModal');
+            const editModal = document.getElementById('editOfferModal');
             if (event.target == modal) {
                 closeModal();
+            }
+            if (event.target == editModal) {
+                closeEditModal();
             }
         }
     </script>

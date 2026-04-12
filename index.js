@@ -390,7 +390,8 @@ app.get('/offers/:id', requireAuth, requireRole('admin'), (req, res) => {
 
 // POST /offers - Crear nueva oferta
 app.post('/offers', requireAuth, requireRole('admin'), (req, res) => {
-    const { productId, discount, description } = req.body;
+    const { productId, discount, description, active } = req.body;
+    console.log('Creating offer:', { productId, discount, description, active });
     if (!productId || !discount) {
         return res.status(400).json({ error: 'Product ID y discount son requeridos' });
     }
@@ -402,7 +403,8 @@ app.post('/offers', requireAuth, requireRole('admin'), (req, res) => {
         id: nextOfferId++,
         productId: parseInt(productId),
         discount: parseInt(discount),
-        description: description || ''
+        description: description || '',
+        active: !!active
     };
     offers.push(newOffer);
     res.status(201).json(newOffer);
@@ -411,14 +413,16 @@ app.post('/offers', requireAuth, requireRole('admin'), (req, res) => {
 // PUT /offers/:id - Actualizar oferta
 app.put('/offers/:id', requireAuth, requireRole('admin'), (req, res) => {
     const id = parseInt(req.params.id);
+    console.log('Updating offer:', id, req.body);
     const offerIndex = offers.findIndex(o => o.id === id);
     if (offerIndex === -1) {
         return res.status(404).json({ error: 'Oferta no encontrada' });
     }
-    const { productId, discount, description } = req.body;
+    const { productId, discount, description, active } = req.body;
     if (productId !== undefined) offers[offerIndex].productId = parseInt(productId);
     if (discount !== undefined) offers[offerIndex].discount = parseInt(discount);
     if (description !== undefined) offers[offerIndex].description = description;
+    if (active !== undefined) offers[offerIndex].active = !!active;
     res.json(offers[offerIndex]);
 });
 
