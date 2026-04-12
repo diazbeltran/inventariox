@@ -215,6 +215,80 @@ app.get('/catalog', (req, res) => {
     res.render('catalog', { products, user: req.session.user });
 });
 
+// GET /cart - Carrito de compras
+app.get('/cart', requireAuth, (req, res) => {
+    req.session.cart = req.session.cart || [];
+    const cart = req.session.cart.map(item => {
+        const product = products.find(p => p.id === item.id);
+        return product ? { ...product, quantity: item.quantity } : null;
+    }).filter(item => item !== null);
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    res.render('cart', { cart, total, user: req.session.user });
+});
+
+// POST /cart/add/:id - Agregar producto al carrito
+app.post('/cart/add/:id', requireAuth, (req, res) => {
+    const id = parseInt(req.params.id);
+    const product = products.find(p => p.id === id);
+    if (!product || product.stock <= 0) {
+        return res.status(400).json({ error: 'Producto no disponible' });
+    }
+    req.session.cart = req.session.cart || [];
+    const existing = req.session.cart.find(item => item.id === id);
+    if (existing) {
+        if (existing.quantity >= product.stock) {
+            return res.status(400).json({ error: 'No hay suficiente stock' });
+        }
+        existing.quantity++;
+    } else {
+        req.session.cart.push({ id, quantity: 1 });
+    }
+    res.status(200).json({ message: 'Producto agregado' });
+});
+
+// POST /cart/update/:id - Actualizar cantidad en carrito
+app.post('/cart/update/:id', requireAuth, (req, res) => {
+    const id = parseInt(req.params.id);
+    const { quantity } = req.body;
+    const product = products.find(p => p.id === id);
+    if (!product || quantity < 1 || quantity > product.stock) {
+        return res.status(400).json({ error: 'Cantidad inválida' });
+    }
+    req.session.cart = req.session.cart || [];
+    const item = req.session.cart.find(item => item.id === id);
+    if (item) {
+        item.quantity = parseInt(quantity);
+    }
+    res.status(200).json({ message: 'Cantidad actualizada' });
+});
+
+// POST /cart/remove/:id - Remover producto del carrito
+app.post('/cart/remove/:id', requireAuth, (req, res) => {
+    const id = parseInt(req.params.id);
+    req.session.cart = req.session.cart || [];
+    req.session.cart = req.session.cart.filter(item => item.id !== id);
+    res.status(200).json({ message: 'Producto removido' });
+});
+
+// POST /cart/checkout - Generar compra
+app.post('/cart/checkout', requireAuth, (req, res) => {
+    req.session.cart = req.session.cart || [];
+    if (req.session.cart.length === 0) {
+        return res.status(400).json({ error: 'Carrito vacío' });
+    }
+    // Verificar stock y reducir
+    for (const item of req.session.cart) {
+        const product = products.find(p => p.id === item.id);
+        if (!product || product.stock < item.quantity) {
+            return res.status(400).json({ error: 'Stock insuficiente para ' + product.name });
+        }
+        product.stock -= item.quantity;
+    }
+    // Vaciar carrito
+    req.session.cart = [];
+    res.status(200).json({ message: 'Compra generada' });
+});
+
 // ADMIN ROUTES
 app.get('/admin/dashboard', (req, res) => {
     if (!req.session.user || req.session.user.role !== 'admin') {

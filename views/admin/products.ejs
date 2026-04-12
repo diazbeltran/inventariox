@@ -30,6 +30,20 @@
         .btn-edit:hover { background: #0056b3; }
         .btn-delete { background: #dc3545; color: white; }
         .btn-delete:hover { background: #c82333; }
+
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal.active { display: block; }
+        .modal-content { background-color: white; margin: 5% auto; padding: 30px; border-radius: 8px; width: 90%; max-width: 500px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .close { font-size: 2em; cursor: pointer; color: #aaa; }
+        .close:hover { color: #000; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #333; font-weight: 500; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 1em; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+        .btn-submit { width: 100%; background: #667eea; color: white; padding: 12px; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px; }
+        .btn-submit:hover { background: #5568d3; }
     </style>
 </head>
 <body>
@@ -50,7 +64,7 @@
     <div class="main">
         <div class="header">
             <h1><i class="fas fa-box"></i> Mantenedor de Productos</h1>
-            <a href="/add" class="add-btn"><i class="fas fa-plus"></i> Nuevo Producto</a>
+            <button class="add-btn" onclick="openModal()"><i class="fas fa-plus"></i> Nuevo Producto</button>
         </div>
 
         <% if (products.length === 0) { %>
@@ -82,7 +96,7 @@
                             <td><%= product.stock %></td>
                             <td>$<%= (product.price * product.stock).toFixed(2) %></td>
                             <td class="actions">
-                                <a href="/edit/<%= product.id %>" class="btn btn-edit"><i class="fas fa-edit"></i> Editar</a>
+                                <button onclick="openEditModal(<%= product.id %>)" class="btn btn-edit"><i class="fas fa-edit"></i> Editar</button>
                                 <a href="#" onclick="deleteProduct(<%= product.id %>)" class="btn btn-delete"><i class="fas fa-trash"></i> Eliminar</a>
                             </td>
                         </tr>
@@ -92,11 +106,172 @@
         <% } %>
     </div>
 
+    <!-- Modal Formulario Agregar -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nuevo Producto</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="productForm">
+                <div class="form-group">
+                    <label for="name">Nombre *</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Descripción</label>
+                    <textarea id="description" name="description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="price">Precio *</label>
+                    <input type="number" id="price" step="0.01" name="price" required>
+                </div>
+                <div class="form-group">
+                    <label for="stock">Stock *</label>
+                    <input type="number" id="stock" name="stock" required>
+                </div>
+                <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Guardar Producto</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Formulario Editar -->
+    <div id="editProductModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Producto</h2>
+                <span class="close" onclick="closeEditModal()">&times;</span>
+            </div>
+            <form id="editProductForm">
+                <input type="hidden" id="editProductId" name="id">
+                <div class="form-group">
+                    <label for="editName">Nombre *</label>
+                    <input type="text" id="editName" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="editDescription">Descripción</label>
+                    <textarea id="editDescription" name="description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editPrice">Precio *</label>
+                    <input type="number" id="editPrice" step="0.01" name="price" required>
+                </div>
+                <div class="form-group">
+                    <label for="editStock">Stock *</label>
+                    <input type="number" id="editStock" name="stock" required>
+                </div>
+                <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Actualizar Producto</button>
+            </form>
+        </div>
+    </div>
+
     <script>
+        function openModal() {
+            document.getElementById('productModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('productModal').classList.remove('active');
+        }
+
+        function openEditModal(id) {
+            fetch(`/products/${id}`)
+                .then(response => response.json())
+                .then(product => {
+                    document.getElementById('editProductId').value = product.id;
+                    document.getElementById('editName').value = product.name;
+                    document.getElementById('editDescription').value = product.description || '';
+                    document.getElementById('editPrice').value = product.price;
+                    document.getElementById('editStock').value = product.stock;
+                    document.getElementById('editProductModal').classList.add('active');
+                })
+                .catch(error => {
+                    console.error('Error loading product:', error);
+                    alert('Error al cargar el producto');
+                });
+        }
+
+        function closeEditModal() {
+            document.getElementById('editProductModal').classList.remove('active');
+        }
+
         function deleteProduct(id) {
             if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
                 fetch(`/products/${id}`, { method: 'DELETE' })
                     .then(() => location.reload());
+            }
+        }
+
+        document.getElementById('productForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+
+            if (!confirm(`¿Estás seguro de crear el producto "${data.name}"?`)) {
+                return;
+            }
+
+            fetch('/products', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (response.ok) {
+                    closeModal();
+                    location.reload();
+                } else {
+                    alert('Error al guardar el producto');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al guardar el producto');
+            });
+        });
+
+        document.getElementById('editProductForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            const id = data.id;
+            delete data.id;
+
+            if (!confirm(`¿Estás seguro de actualizar el producto "${data.name}"?`)) {
+                return;
+            }
+
+            fetch(`/products/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (response.ok) {
+                    closeEditModal();
+                    location.reload();
+                } else {
+                    alert('Error al actualizar el producto');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al actualizar el producto');
+            });
+        });
+
+        window.onclick = function(event) {
+            const addModal = document.getElementById('productModal');
+            const editModal = document.getElementById('editProductModal');
+            if (event.target == addModal) {
+                closeModal();
+            }
+            if (event.target == editModal) {
+                closeEditModal();
             }
         }
     </script>
