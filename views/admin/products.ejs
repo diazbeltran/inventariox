@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mantenedor de Productos - InventarioX</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
+        .sidebar { position: fixed; left: 0; top: 0; width: 250px; height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; color: white; overflow-y: auto; }
+        .logo { font-size: 1.5em; font-weight: bold; margin-bottom: 30px; text-align: center; }
+        .menu-item { padding: 12px 15px; margin: 5px 0; border-radius: 5px; text-decoration: none; color: white; display: block; transition: all 0.3s; }
+        .menu-item:hover { background: rgba(255,255,255,0.2); }
+        .menu-item.active { background: rgba(255,255,255,0.3); border-left: 4px solid white; }
+        .menu-item i { margin-right: 10px; width: 20px; }
+        .main { margin-left: 250px; padding: 30px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+
+        .add-btn { background: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 8px; text-decoration: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+        .add-btn:hover { background: #218838; }
+
+        table { width: 100%; background: white; border-collapse: collapse; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; color: #495057; font-weight: 600; text-transform: uppercase; font-size: 0.9em; }
+        tr:hover { background: #f8f9fa; }
+
+        .actions { display: flex; gap: 10px; }
+        .btn { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; transition: all 0.3s; }
+        .btn-edit { background: #007bff; color: white; }
+        .btn-edit:hover { background: #0056b3; }
+        .btn-delete { background: #dc3545; color: white; }
+        .btn-delete:hover { background: #c82333; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo"><i class="fas fa-boxes"></i> InventarioX</div>
+        <a href="/admin/dashboard" class="menu-item"><i class="fas fa-chart-bar"></i> Dashboard</a>
+        <a href="/admin/products" class="menu-item active"><i class="fas fa-box"></i> Productos</a>
+        <a href="/admin/clients" class="menu-item"><i class="fas fa-users"></i> Proveedores</a>
+        <a href="/admin/offers" class="menu-item"><i class="fas fa-tag"></i> Ofertas</a>
+        <hr style="margin: 20px 0; opacity: 0.3;">
+        <form action="/logout" method="POST" style="margin-top: auto;">
+            <button type="submit" class="menu-item" style="background: #dc3545; border: none; cursor: pointer; text-align: left;"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
+        </form>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+        <div class="header">
+            <h1><i class="fas fa-box"></i> Mantenedor de Productos</h1>
+            <a href="/add" class="add-btn"><i class="fas fa-plus"></i> Nuevo Producto</a>
+        </div>
+
+        <% if (products.length === 0) { %>
+            <div style="background: white; padding: 40px; text-align: center; border-radius: 8px;">
+                <i class="fas fa-inbox" style="font-size: 3em; color: #ccc; margin-bottom: 20px;"></i>
+                <h2 style="color: #666;">No hay productos registrados</h2>
+                <p style="color: #999;">Comienza agregando tu primer producto</p>
+            </div>
+        <% } else { %>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Precio</th>
+                        <th>Stock</th>
+                        <th>Valor Total</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% products.forEach(product => { %>
+                        <tr>
+                            <td><strong>#<%= product.id %></strong></td>
+                            <td><strong><%= product.name %></strong></td>
+                            <td><%= product.description %></td>
+                            <td><i class="fas fa-dollar-sign"></i> <%= product.price.toFixed(2) %></td>
+                            <td><%= product.stock %></td>
+                            <td>$<%= (product.price * product.stock).toFixed(2) %></td>
+                            <td class="actions">
+                                <a href="/edit/<%= product.id %>" class="btn btn-edit"><i class="fas fa-edit"></i> Editar</a>
+                                <a href="#" onclick="deleteProduct(<%= product.id %>)" class="btn btn-delete"><i class="fas fa-trash"></i> Eliminar</a>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        <% } %>
+    </div>
+
+    <script>
+        function deleteProduct(id) {
+            if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+                fetch(`/products/${id}`, { method: 'DELETE' })
+                    .then(() => location.reload());
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Catálogo - InventarioX</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: white; padding: 20px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { margin: 0; color: #333; }
+        .user-section { display: flex; align-items: center; gap: 20px; }
+        .user-info { text-align: right; }
+        .user-info p { margin: 5px 0; color: #666; }
+        .user-role { background: #e7f3ff; color: #0056b3; padding: 5px 12px; border-radius: 20px; display: inline-block; font-size: 0.9em; }
+        .logout-btn { background: #dc3545; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; }
+        .logout-btn:hover { background: #c82333; }
+
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .product-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: all 0.3s; }
+        .product-card:hover { transform: translateY(-10px); box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
+        
+        .product-image { height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3em; }
+        .product-info { padding: 20px; }
+        .product-name { font-size: 1.2em; font-weight: bold; color: #333; margin: 10px 0; }
+        .product-description { color: #999; font-size: 0.9em; margin-bottom: 10px; }
+        .product-price { font-size: 1.5em; color: #28a745; font-weight: bold; margin: 10px 0; }
+        
+        .stock-info { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; padding-top: 15px; border-top: 1px solid #eee; }
+        .stock-badge { display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 0.85em; }
+        .stock-available { background: #d4edda; color: #155724; }
+        .stock-low { background: #fff3cd; color: #856404; }
+        .stock-out { background: #f8d7da; color: #721c24; }
+
+        .empty-state { background: white; padding: 60px 20px; text-align: center; border-radius: 8px; }
+        .empty-state i { font-size: 4em; color: #ccc; }
+        .empty-state h2 { color: #999; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-shopping-bag"></i> Catálogo de Productos</h1>
+            <div class="user-section">
+                <div class="user-info">
+                    <p>Bienvenido</p>
+                    <p style="font-weight: bold; color: #667eea;"><%= user.username %></p>
+                    <span class="user-role">
+                        <% if (user.role === 'seller') { %>
+                            <i class="fas fa-store"></i> Vendedor
+                        <% } else { %>
+                            <i class="fas fa-user"></i> Cliente
+                        <% } %>
+                    </span>
+                </div>
+                <form action="/logout" method="POST" style="margin: 0;">
+                    <button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
+                </form>
+            </div>
+        </div>
+
+        <% if (products.length === 0) { %>
+            <div class="empty-state">
+                <i class="fas fa-boxes"></i>
+                <h2>No hay productos disponibles</h2>
+                <p>Vuelve más tarde para ver nuestro catálogo</p>
+            </div>
+        <% } else { %>
+            <div class="products-grid">
+                <% products.forEach(product => { %>
+                    <div class="product-card">
+                        <div class="product-image">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-name"><%= product.name %></h3>
+                            <p class="product-description"><%= product.description || 'Sin descripción' %></p>
+                            <div class="product-price"><i class="fas fa-dollar-sign"></i><%= product.price.toFixed(2) %></div>
+                            
+                            <div class="stock-info">
+                                <span><i class="fas fa-cubes"></i> Stock: <%= product.stock %></span>
+                            </div>
+
+                            <% if (product.stock > 10) { %>
+                                <span class="stock-badge stock-available"><i class="fas fa-check-circle"></i> Disponible</span>
+                            <% } else if (product.stock > 0) { %>
+                                <span class="stock-badge stock-low"><i class="fas fa-exclamation-triangle"></i> Bajo Stock</span>
+                            <% } else { %>
+                                <span class="stock-badge stock-out"><i class="fas fa-times-circle"></i> Agotado</span>
+                            <% } %>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        <% } %>
+    </div>
+</body>
+</html>

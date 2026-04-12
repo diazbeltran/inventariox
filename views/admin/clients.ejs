@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mantenedor de Proveedores - InventarioX</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
+        .sidebar { position: fixed; left: 0; top: 0; width: 250px; height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; color: white; overflow-y: auto; }
+        .logo { font-size: 1.5em; font-weight: bold; margin-bottom: 30px; text-align: center; }
+        .menu-item { padding: 12px 15px; margin: 5px 0; border-radius: 5px; text-decoration: none; color: white; display: block; transition: all 0.3s; }
+        .menu-item:hover { background: rgba(255,255,255,0.2); }
+        .menu-item.active { background: rgba(255,255,255,0.3); border-left: 4px solid white; }
+        .menu-item i { margin-right: 10px; width: 20px; }
+        .main { margin-left: 250px; padding: 30px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+
+        .add-btn { background: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 8px; text-decoration: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+        .add-btn:hover { background: #218838; }
+
+        .clients-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .client-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .client-name { font-size: 1.2em; font-weight: bold; color: #333; margin-bottom: 10px; }
+        .client-info { color: #666; font-size: 0.9em; margin-bottom: 8px; }
+        .client-info i { margin-right: 8px; color: #667eea; width: 20px; }
+        .client-actions { display: flex; gap: 10px; margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; }
+
+        .btn { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; transition: all 0.3s; flex: 1; justify-content: center; }
+        .btn-edit { background: #007bff; color: white; }
+        .btn-edit:hover { background: #0056b3; }
+        .btn-delete { background: #dc3545; color: white; }
+        .btn-delete:hover { background: #c82333; }
+
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal.active { display: block; }
+        .modal-content { background-color: white; margin: 5% auto; padding: 30px; border-radius: 8px; width: 90%; max-width: 500px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .close { font-size: 2em; cursor: pointer; color: #aaa; }
+        .close:hover { color: #000; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #333; font-weight: 500; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 1em; }
+        .form-group input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+        .btn-submit { width: 100%; background: #667eea; color: white; padding: 12px; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px; }
+        .btn-submit:hover { background: #5568d3; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo"><i class="fas fa-boxes"></i> InventarioX</div>
+        <a href="/admin/dashboard" class="menu-item"><i class="fas fa-chart-bar"></i> Dashboard</a>
+        <a href="/admin/products" class="menu-item"><i class="fas fa-box"></i> Productos</a>
+        <a href="/admin/clients" class="menu-item active"><i class="fas fa-users"></i> Proveedores</a>
+        <a href="/admin/offers" class="menu-item"><i class="fas fa-tag"></i> Ofertas</a>
+        <hr style="margin: 20px 0; opacity: 0.3;">
+        <form action="/logout" method="POST" style="margin-top: auto;">
+            <button type="submit" class="menu-item" style="background: #dc3545; border: none; cursor: pointer; text-align: left;"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
+        </form>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+        <div class="header">
+            <h1><i class="fas fa-users"></i> Mantenedor de Proveedores</h1>
+            <button class="add-btn" onclick="openModal()"><i class="fas fa-plus"></i> Nuevo Proveedor</button>
+        </div>
+
+        <% if (clients.length === 0) { %>
+            <div style="background: white; padding: 40px; text-align: center; border-radius: 8px;">
+                <i class="fas fa-inbox" style="font-size: 3em; color: #ccc; margin-bottom: 20px;"></i>
+                <h2 style="color: #666;">No hay proveedores registrados</h2>
+                <p style="color: #999;">Comienza agregando tu primer proveedor</p>
+            </div>
+        <% } else { %>
+            <div class="clients-grid">
+                <% clients.forEach(client => { %>
+                    <div class="client-card">
+                        <h3 class="client-name"><i class="fas fa-building"></i> <%= client.name %></h3>
+                        <div class="client-info">
+                            <i class="fas fa-envelope"></i> <%= client.email %>
+                        </div>
+                        <div class="client-info">
+                            <i class="fas fa-phone"></i> <%= client.phone %>
+                        </div>
+                        <div class="client-info">
+                            <i class="fas fa-map-marker-alt"></i> <%= client.address %>
+                        </div>
+                        <div class="client-actions">
+                            <button class="btn btn-edit"><i class="fas fa-edit"></i> Editar</button>
+                            <button onclick="deleteClient(<%= client.id %>)" class="btn btn-delete"><i class="fas fa-trash"></i> Eliminar</button>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- Modal Formulario -->
+    <div id="clientModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nuevo Proveedor</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="clientForm">
+                <div class="form-group">
+                    <label for="name">Nombre *</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Teléfono *</label>
+                    <input type="tel" id="phone" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="address">Dirección *</label>
+                    <input type="text" id="address" name="address" required>
+                </div>
+                <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Guardar Proveedor</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openModal() {
+            document.getElementById('clientModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('clientModal').classList.remove('active');
+        }
+
+        function deleteClient(id) {
+            if (confirm('¿Estás seguro?')) {
+                console.log('Eliminar cliente:', id);
+                // TODO: Implementar eliminación
+            }
+        }
+
+        document.getElementById('clientForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            console.log('Guardar cliente:', Object.fromEntries(formData));
+            // TODO: Implementar guardado
+        });
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('clientModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

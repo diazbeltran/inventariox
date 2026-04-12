@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mantenedor de Ofertas - InventarioX</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
+        .sidebar { position: fixed; left: 0; top: 0; width: 250px; height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; color: white; overflow-y: auto; }
+        .logo { font-size: 1.5em; font-weight: bold; margin-bottom: 30px; text-align: center; }
+        .menu-item { padding: 12px 15px; margin: 5px 0; border-radius: 5px; text-decoration: none; color: white; display: block; transition: all 0.3s; }
+        .menu-item:hover { background: rgba(255,255,255,0.2); }
+        .menu-item.active { background: rgba(255,255,255,0.3); border-left: 4px solid white; }
+        .menu-item i { margin-right: 10px; width: 20px; }
+        .main { margin-left: 250px; padding: 30px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+
+        .add-btn { background: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 8px; text-decoration: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+        .add-btn:hover { background: #218838; }
+
+        table { width: 100%; background: white; border-collapse: collapse; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; color: #495057; font-weight: 600; text-transform: uppercase; font-size: 0.9em; }
+        tr:hover { background: #f8f9fa; }
+
+        .actions { display: flex; gap: 10px; }
+        .btn { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; transition: all 0.3s; }
+        .btn-edit { background: #007bff; color: white; }
+        .btn-edit:hover { background: #0056b3; }
+        .btn-delete { background: #dc3545; color: white; }
+        .btn-delete:hover { background: #c82333; }
+
+        .discount-badge { background: #ffc107; color: #000; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal.active { display: block; }
+        .modal-content { background-color: white; margin: 5% auto; padding: 30px; border-radius: 8px; width: 90%; max-width: 500px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .close { font-size: 2em; cursor: pointer; color: #aaa; }
+        .close:hover { color: #000; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #333; font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 1em; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+        .btn-submit { width: 100%; background: #667eea; color: white; padding: 12px; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px; }
+        .btn-submit:hover { background: #5568d3; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo"><i class="fas fa-boxes"></i> InventarioX</div>
+        <a href="/admin/dashboard" class="menu-item"><i class="fas fa-chart-bar"></i> Dashboard</a>
+        <a href="/admin/products" class="menu-item"><i class="fas fa-box"></i> Productos</a>
+        <a href="/admin/clients" class="menu-item"><i class="fas fa-users"></i> Proveedores</a>
+        <a href="/admin/offers" class="menu-item active"><i class="fas fa-tag"></i> Ofertas</a>
+        <hr style="margin: 20px 0; opacity: 0.3;">
+        <form action="/logout" method="POST" style="margin-top: auto;">
+            <button type="submit" class="menu-item" style="background: #dc3545; border: none; cursor: pointer; text-align: left;"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
+        </form>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+        <div class="header">
+            <h1><i class="fas fa-tag"></i> Mantenedor de Ofertas</h1>
+            <button class="add-btn" onclick="openModal()"><i class="fas fa-plus"></i> Nueva Oferta</button>
+        </div>
+
+        <% if (offers.length === 0) { %>
+            <div style="background: white; padding: 40px; text-align: center; border-radius: 8px;">
+                <i class="fas fa-inbox" style="font-size: 3em; color: #ccc; margin-bottom: 20px;"></i>
+                <h2 style="color: #666;">No hay ofertas registradas</h2>
+                <p style="color: #999;">Comienza agregando una oferta para tus productos</p>
+            </div>
+        <% } else { %>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Producto</th>
+                        <th>Descuento</th>
+                        <th>Descripción</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% offers.forEach(offer => { 
+                        const product = products.find(p => p.id === offer.productId);
+                    %>
+                        <tr>
+                            <td><strong>#<%= offer.id %></strong></td>
+                            <td><%= product ? product.name : 'Producto no encontrado' %></td>
+                            <td><span class="discount-badge"><%= offer.discount %>%</span></td>
+                            <td><%= offer.description %></td>
+                            <td class="actions">
+                                <button class="btn btn-edit"><i class="fas fa-edit"></i> Editar</button>
+                                <button onclick="deleteOffer(<%= offer.id %>)" class="btn btn-delete"><i class="fas fa-trash"></i> Eliminar</button>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        <% } %>
+    </div>
+
+    <!-- Modal Formulario -->
+    <div id="offerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-tag"></i> Nueva Oferta</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="offerForm">
+                <div class="form-group">
+                    <label for="productId">Producto *</label>
+                    <select id="productId" name="productId" required>
+                        <option value="">Seleccionar producto...</option>
+                        <% products.forEach(product => { %>
+                            <option value="<%= product.id %>"><%= product.name %> - $<%= product.price %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="discount">Descuento (%) *</label>
+                    <input type="number" id="discount" name="discount" min="1" max="100" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Descripción</label>
+                    <textarea id="description" name="description" rows="3" placeholder="Ej: Descuento por compra en volumen"></textarea>
+                </div>
+                <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Crear Oferta</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openModal() {
+            document.getElementById('offerModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('offerModal').classList.remove('active');
+        }
+
+        function deleteOffer(id) {
+            if (confirm('¿Estás seguro?')) {
+                console.log('Eliminar oferta:', id);
+                // TODO: Implementar eliminación
+            }
+        }
+
+        document.getElementById('offerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            console.log('Guardar oferta:', Object.fromEntries(formData));
+            // TODO: Implementar guardado
+        });
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('offerModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
