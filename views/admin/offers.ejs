@@ -145,17 +145,56 @@
         }
 
         function deleteOffer(id) {
-            if (confirm('¿Estás seguro?')) {
-                console.log('Eliminar oferta:', id);
-                // TODO: Implementar eliminación
+            if (confirm('¿Estás seguro de que quieres eliminar esta oferta?')) {
+                fetch(`/offers/${id}`, { 
+                    method: 'DELETE',
+                    credentials: 'include'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al eliminar oferta');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al eliminar oferta');
+                });
             }
         }
 
         document.getElementById('offerForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
-            console.log('Guardar oferta:', Object.fromEntries(formData));
-            // TODO: Implementar guardado
+            const data = Object.fromEntries(formData);
+            data.productId = parseInt(data.productId);
+            data.discount = parseInt(data.discount);
+
+            if (!confirm(`¿Estás seguro de crear esta oferta?`)) {
+                return;
+            }
+
+            fetch('/offers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data),
+                credentials: 'include'
+            })
+            .then(response => {
+                if (response.ok) {
+                    closeModal();
+                    location.reload();
+                } else {
+                    alert('Error al guardar oferta');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al guardar oferta');
+            });
         });
 
         window.onclick = function(event) {

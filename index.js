@@ -315,12 +315,100 @@ app.get('/admin/clients', (req, res) => {
     res.render('admin/clients', { clients, user: req.session.user });
 });
 
+// POST /clients - Crear nuevo proveedor
+app.post('/clients', requireAuth, requireRole('admin'), (req, res) => {
+    const { name, email, phone, address } = req.body;
+    if (!name || !email || !phone || !address) {
+        return res.status(400).json({ error: 'Todos los campos son requeridos' });
+    }
+    const newClient = {
+        id: nextClientId++,
+        name,
+        email,
+        phone,
+        address
+    };
+    clients.push(newClient);
+    res.status(201).json(newClient);
+});
+
+// PUT /clients/:id - Actualizar proveedor
+app.put('/clients/:id', requireAuth, requireRole('admin'), (req, res) => {
+    const id = parseInt(req.params.id);
+    const clientIndex = clients.findIndex(c => c.id === id);
+    if (clientIndex === -1) {
+        return res.status(404).json({ error: 'Proveedor no encontrado' });
+    }
+    const { name, email, phone, address } = req.body;
+    if (name) clients[clientIndex].name = name;
+    if (email) clients[clientIndex].email = email;
+    if (phone) clients[clientIndex].phone = phone;
+    if (address) clients[clientIndex].address = address;
+    res.json(clients[clientIndex]);
+});
+
+// DELETE /clients/:id - Eliminar proveedor
+app.delete('/clients/:id', requireAuth, requireRole('admin'), (req, res) => {
+    const id = parseInt(req.params.id);
+    const clientIndex = clients.findIndex(c => c.id === id);
+    if (clientIndex === -1) {
+        return res.status(404).json({ error: 'Proveedor no encontrado' });
+    }
+    clients.splice(clientIndex, 1);
+    res.status(204).send();
+});
+
 // GET /admin/offers - Mantenedor de ofertas
 app.get('/admin/offers', (req, res) => {
     if (!req.session.user || req.session.user.role !== 'admin') {
         return res.redirect('/');
     }
     res.render('admin/offers', { offers, products, user: req.session.user });
+});
+
+// POST /offers - Crear nueva oferta
+app.post('/offers', requireAuth, requireRole('admin'), (req, res) => {
+    const { productId, discount, description } = req.body;
+    if (!productId || !discount) {
+        return res.status(400).json({ error: 'Product ID y discount son requeridos' });
+    }
+    const product = products.find(p => p.id === parseInt(productId));
+    if (!product) {
+        return res.status(404).json({ error: 'Producto no encontrado' });
+    }
+    const newOffer = {
+        id: nextOfferId++,
+        productId: parseInt(productId),
+        discount: parseInt(discount),
+        description: description || ''
+    };
+    offers.push(newOffer);
+    res.status(201).json(newOffer);
+});
+
+// PUT /offers/:id - Actualizar oferta
+app.put('/offers/:id', requireAuth, requireRole('admin'), (req, res) => {
+    const id = parseInt(req.params.id);
+    const offerIndex = offers.findIndex(o => o.id === id);
+    if (offerIndex === -1) {
+        return res.status(404).json({ error: 'Oferta no encontrada' });
+    }
+    const { productId, discount, description } = req.body;
+    if (productId !== undefined) offers[offerIndex].productId = parseInt(productId);
+    if (discount !== undefined) offers[offerIndex].discount = parseInt(discount);
+    if (description !== undefined) offers[offerIndex].description = description;
+    res.json(offers[offerIndex]);
+});
+
+// DELETE /offers/:id - Eliminar oferta
+app.delete('/offers/:id', requireAuth, requireRole('admin'), (req, res) => {
+    const id = parseInt(req.params.id);
+    const offerIndex = offers.findIndex(o => o.id === id);
+    if (offerIndex === -1) {
+        return res.status(404).json({ error: 'Oferta no encontrada' });
+    }
+    offers.splice(offerIndex, 1);
+    res.status(204).send();
 });
 
 // GET /add - Form to add product

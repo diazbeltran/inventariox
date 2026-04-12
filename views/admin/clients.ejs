@@ -136,17 +136,54 @@
         }
 
         function deleteClient(id) {
-            if (confirm('¿Estás seguro?')) {
-                console.log('Eliminar cliente:', id);
-                // TODO: Implementar eliminación
+            if (confirm('¿Estás seguro de que quieres eliminar este proveedor?')) {
+                fetch(`/clients/${id}`, { 
+                    method: 'DELETE',
+                    credentials: 'include'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al eliminar proveedor');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al eliminar proveedor');
+                });
             }
         }
 
         document.getElementById('clientForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
-            console.log('Guardar cliente:', Object.fromEntries(formData));
-            // TODO: Implementar guardado
+            const data = Object.fromEntries(formData);
+
+            if (!confirm(`¿Estás seguro de crear el proveedor "${data.name}"?`)) {
+                return;
+            }
+
+            fetch('/clients', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data),
+                credentials: 'include'
+            })
+            .then(response => {
+                if (response.ok) {
+                    closeModal();
+                    location.reload();
+                } else {
+                    alert('Error al guardar proveedor');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al guardar proveedor');
+            });
         });
 
         window.onclick = function(event) {
