@@ -40,6 +40,8 @@
 
         .btn-add-cart { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin-top: 10px; width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
         .btn-add-cart:hover { background: #0056b3; }
+
+        .discount-badge { background: #dc3545; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em; margin-left: 5px; }
     </style>
 </head>
 <body>
@@ -81,7 +83,18 @@
                         <div class="product-info">
                             <h3 class="product-name"><%= product.name %></h3>
                             <p class="product-description"><%= product.description || 'Sin descripción' %></p>
-                            <div class="product-price"><i class="fas fa-dollar-sign"></i><%= product.price.toFixed(2) %></div>
+                            <% if (product.discount > 0) { %>
+                                <div class="product-price">
+                                    <span style="text-decoration: line-through; color: #999;">$<%= product.originalPrice.toFixed(2) %></span>
+                                    <span style="color: #28a745; font-weight: bold;"> $<%= product.price.toFixed(2) %></span>
+                                    <span class="discount-badge"><%= product.discount %>% OFF</span>
+                                </div>
+                                <% if (product.offerDescription) { %>
+                                    <p style="color: #007bff; font-size: 0.9em;"><%= product.offerDescription %></p>
+                                <% } %>
+                            <% } else { %>
+                                <div class="product-price"><i class="fas fa-dollar-sign"></i><%= product.price.toFixed(2) %></div>
+                            <% } %>
                             
                             <div class="stock-info">
                                 <span><i class="fas fa-cubes"></i> Stock: <%= product.stock %></span>

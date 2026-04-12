@@ -32,7 +32,7 @@ let nextClientId = 3;
 
 // In-memory offers/promotions storage
 let offers = [
-    { id: 1, productId: 1, discount: 10, description: '10% descuento' }
+    { id: 1, productId: 1, discount: 10, description: '10% descuento', active: true }
 ];
 let nextOfferId = 2;
 // Middleware to check authentication
@@ -212,7 +212,18 @@ app.get('/catalog', (req, res) => {
     if (!req.session.user) {
         return res.redirect('/login');
     }
-    res.render('catalog', { products, user: req.session.user });
+    // Agregar ofertas a los productos
+    const productsWithOffers = products.map(product => {
+        const offer = offers.find(o => o.productId === product.id && o.active);
+        return {
+            ...product,
+            originalPrice: product.price,
+            price: offer ? product.price * (1 - offer.discount / 100) : product.price,
+            discount: offer ? offer.discount : 0,
+            offerDescription: offer ? offer.description : null
+        };
+    });
+    res.render('catalog', { products: productsWithOffers, user: req.session.user });
 });
 
 // GET /cart - Carrito de compras
@@ -220,7 +231,16 @@ app.get('/cart', requireAuth, (req, res) => {
     req.session.cart = req.session.cart || [];
     const cart = req.session.cart.map(item => {
         const product = products.find(p => p.id === item.id);
-        return product ? { ...product, quantity: item.quantity } : null;
+        const offer = offers.find(o => o.productId === item.id && o.active);
+        const discountedPrice = offer ? product.price * (1 - offer.discount / 100) : product.price;
+        return product ? { 
+            ...product, 
+            quantity: item.quantity,
+            originalPrice: product.price,
+            price: discountedPrice,
+            discount: offer ? offer.discount : 0,
+            offerDescription: offer ? offer.description : null
+        } : null;
     }).filter(item => item !== null);
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     res.render('cart', { cart, total, user: req.session.user });
@@ -358,12 +378,14 @@ app.delete('/clients/:id', requireAuth, requireRole('admin'), (req, res) => {
     res.status(204).send();
 });
 
-// GET /admin/offers - Mantenedor de ofertas
-app.get('/admin/offers', (req, res) => {
-    if (!req.session.user || req.session.user.role !== 'admin') {
-        return res.redirect('/');
+// GET /offers/:id - Get a specific offer
+app.get('/offers/:id', requireAuth, requireRole('admin'), (req, res) => {
+    const id = parseInt(req.params.id);
+    const offer = offers.find(o => o.id === id);
+    if (!offer) {
+        return res.status(404).json({ error: 'Oferta no encontrada' });
     }
-    res.render('admin/offers', { offers, products, user: req.session.user });
+    res.json(offer);
 });
 
 // POST /offers - Crear nueva oferta

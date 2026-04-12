@@ -45,6 +45,9 @@
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
         .btn-submit { width: 100%; background: #667eea; color: white; padding: 12px; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px; }
         .btn-submit:hover { background: #5568d3; }
+
+        .status-active { color: #28a745; font-weight: bold; }
+        .status-inactive { color: #dc3545; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -82,6 +85,7 @@
                         <th>Producto</th>
                         <th>Descuento</th>
                         <th>Descripción</th>
+                        <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -93,19 +97,16 @@
                             <td><strong>#<%= offer.id %></strong></td>
                             <td><%= product ? product.name : 'Producto no encontrado' %></td>
                             <td><span class="discount-badge"><%= offer.discount %>%</span></td>
-                            <td><%= offer.description %></td>
+                            <td><span class="<%= offer.active ? 'status-active' : 'status-inactive' %>"><%= offer.active ? 'Vigente' : 'Inactiva' %></span></td>
                             <td class="actions">
+                                <button onclick="openEditModal(<%= offer.id %>)"actions">
                                 <button class="btn btn-edit"><i class="fas fa-edit"></i> Editar</button>
                                 <button onclick="deleteOffer(<%= offer.id %>)" class="btn btn-delete"><i class="fas fa-trash"></i> Eliminar</button>
                             </td>
                         </tr>
                     <% }); %>
                 </tbody>
-            </table>
-        <% } %>
-    </div>
-
-    <!-- Modal Formulario -->
+            </table>Crear -->
     <div id="offerModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -127,6 +128,56 @@
                     <input type="number" id="discount" name="discount" min="1" max="100" required>
                 </div>
                 <div class="form-group">
+                    <label for="description">Descripción</label>
+                    <textarea id="description" name="description" rows="3" placeholder="Ej: Descuento por compra en volumen"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="active">
+                        <input type="checkbox" id="active" name="active" checked> Vigente
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="active">
+                        <input type="checkbox" id="active" name="active" checked> Vigente
+                    </label>
+                </div>
+                <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Crear Oferta</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Formulario Editar -->
+    <div id="editOfferModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-tag"></i> Editar Oferta</h2>
+                <span class="close" onclick="closeEditModal()">&times;</span>
+            </div>
+            <form id="editOfferForm">
+                <input type="hidden" id="editOfferId" name="id">
+                <div class="form-group">
+                    <label for="editProductId">Producto *</label>
+                    <select id="editProductId" name="productId" required>
+                        <option value="">Seleccionar producto...</option>
+                        <% products.forEach(product => { %>
+                            <option value="<%= product.id %>"><%= product.name %> - $<%= product.price %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editDiscount">Descuento (%) *</label>
+                    <input type="number" id="editDiscount" name="discount" min="1" max="100" required>
+                </div>
+                <div class="form-group">
+                    <label for="editDescription">Descripción</label>
+                    <textarea id="editDescription" name="description" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editActive">
+                        <input type="checkbox" id="editActive" name="active"> Vigente
+                    </label>
+                </div>
+                <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Actualiz
                     <label for="description">Descripción</label>
                     <textarea id="description" name="description" rows="3" placeholder="Ej: Descuento por compra en volumen"></textarea>
                 </div>
