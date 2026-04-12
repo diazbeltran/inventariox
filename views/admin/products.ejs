@@ -197,7 +197,10 @@
 
         function deleteProduct(id) {
             if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-                fetch(`/products/${id}`, { method: 'DELETE' })
+                fetch(`/products/${id}`, { 
+                    method: 'DELETE',
+                    credentials: 'include'
+                })
                     .then(() => location.reload());
             }
         }
@@ -216,7 +219,8 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify(data),
+                credentials: 'include'
             })
             .then(response => {
                 if (response.ok) {
@@ -248,7 +252,8 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify(data),
+                credentials: 'include'
             })
             .then(response => {
                 if (response.ok) {

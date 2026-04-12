@@ -109,7 +109,8 @@
             fetch('/cart/update/' + productId, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ quantity: newQuantity })
+                body: JSON.stringify({ quantity: newQuantity }),
+                credentials: 'include'
             })
             .then(response => {
                 if (response.ok) {
@@ -125,7 +126,10 @@
         }
 
         function removeFromCart(productId) {
-            fetch('/cart/remove/' + productId, { method: 'POST' })
+            fetch('/cart/remove/' + productId, { 
+                method: 'POST',
+                credentials: 'include'
+            })
             .then(response => {
                 if (response.ok) {
                     location.reload();
@@ -141,7 +145,10 @@
 
         function checkout() {
             if (confirm('¿Estás seguro de generar la compra?')) {
-                fetch('/cart/checkout', { method: 'POST' })
+                fetch('/cart/checkout', { 
+                    method: 'POST',
+                    credentials: 'include'
+                })
                 .then(response => {
                     if (response.ok) {
                         alert('Compra generada exitosamente');

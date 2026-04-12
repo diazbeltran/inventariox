@@ -105,17 +105,20 @@
     </div>
     <script>
         function addToCart(productId) {
-            fetch('/cart/add/' + productId, { method: 'POST' })
-                .then(response => {
-                    if (response.ok) {
-                        alert('Producto agregado al carrito');
-                    } else {
-                        alert('Error al agregar al carrito');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
+            fetch('/cart/add/' + productId, { 
+                method: 'POST',
+                credentials: 'include'
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Producto agregado al carrito');
+                } else {
                     alert('Error al agregar al carrito');
-                });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al agregar al carrito');
+            });
         }
     </script>
