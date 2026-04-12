@@ -187,7 +187,7 @@
 
         function deleteOffer(id) {
             if (confirm('¿Estás seguro de que quieres eliminar esta oferta?')) {
-                fetch(`/offers/${id}`, { 
+                fetch('/offers/' + id, { 
                     method: 'DELETE',
                     credentials: 'include'
                 })
@@ -243,7 +243,7 @@
         });
 
         function openEditModal(id) {
-            fetch(`/offers/${id}`, {
+            fetch('/offers/' + id, {
                 credentials: 'include'
             })
             .then(response => response.json())
@@ -281,7 +281,7 @@
                 return;
             }
 
-            fetch(`/offers/${id}`, {
+            fetch('/offers/' + id, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
