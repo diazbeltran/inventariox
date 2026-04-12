@@ -17,7 +17,6 @@
         .logout-btn:hover { background: #c82333; }
         .back-btn { background: #6c757d; color: white; padding: 10px 15px; border: none; border-radius: 5px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
         .back-btn:hover { background: #5a6268; }
-
         .cart-items { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee; }
         .cart-item:last-child { border-bottom: none; }
@@ -31,12 +30,10 @@
         .item-price { font-weight: bold; color: #28a745; }
         .remove-btn { background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
         .remove-btn:hover { background: #c82333; }
-
         .cart-total { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: right; }
         .total-amount { font-size: 1.5em; font-weight: bold; color: #28a745; margin: 10px 0; }
         .checkout-btn { background: #28a745; color: white; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-size: 1.1em; }
         .checkout-btn:hover { background: #218838; }
-
         .empty-cart { background: white; padding: 60px 20px; text-align: center; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .empty-cart i { font-size: 4em; color: #ccc; }
         .empty-cart h2 { color: #999; }
@@ -44,27 +41,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1><i class="fas fa-shopping-cart"></i> Carrito de Compras</h1>
-            <div class="user-section">
-                <a href="/catalog" class="back-btn"><i class="fas fa-arrow-left"></i> Volver al Catálogo</a>
-                <div class="user-info">
-                    <p>Bienvenido</p>
-                    <p style="font-weight: bold; color: #667eea;"><%= user.username %></p>
-                    <span class="user-role">
-                        <% if (user.role === 'seller') { %>
-                            <i class="fas fa-store"></i> Vendedor
-                        <% } else { %>
-                            <i class="fas fa-user"></i> Cliente
-                        <% } %>
-                    </span>
-                </div>
-                <form action="/logout" method="POST" style="margin: 0;">
-                    <button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
-                </form>
-            </div>
-        </div>
-
+        <%- include('partials/shop-header', { title: 'Carrito de Compras', icon: 'fa-shopping-cart', backHref: '/catalog', backLabel: 'Volver al Catálogo', backClass: 'back-btn', user }) %>
         <% if (cart.length === 0) { %>
             <div class="empty-cart">
                 <i class="fas fa-shopping-cart"></i>
@@ -77,9 +54,7 @@
                 <% cart.forEach(item => { %>
                     <div class="cart-item">
                         <div class="item-info">
-                            <div class="item-image">
-                                <i class="fas fa-box"></i>
-                            </div>
+                            <div class="item-image"><i class="fas fa-box"></i></div>
                             <div class="item-details">
                                 <h3><%= item.name %></h3>
                                 <p><%= item.description || 'Sin descripción' %></p>
@@ -95,14 +70,12 @@
                     </div>
                 <% }); %>
             </div>
-
             <div class="cart-total">
                 <h3>Total: <span class="total-amount">$<%= total.toFixed(2) %></span></h3>
                 <button class="checkout-btn" onclick="checkout()"><i class="fas fa-credit-card"></i> Generar Compra</button>
             </div>
         <% } %>
     </div>
-
     <script>
         function updateQuantity(productId, newQuantity) {
             if (newQuantity < 1) return;
@@ -113,39 +86,31 @@
                 credentials: 'include'
             })
             .then(response => {
-                if (response.ok) {
-                    location.reload();
-                } else {
-                    alert('Error al actualizar cantidad');
-                }
+                if (response.ok) location.reload();
+                else alert('Error al actualizar cantidad');
             })
             .catch(error => {
                 console.error('Error:', error);
                 alert('Error al actualizar cantidad');
             });
         }
-
         function removeFromCart(productId) {
-            fetch('/cart/remove/' + productId, { 
+            fetch('/cart/remove/' + productId, {
                 method: 'POST',
                 credentials: 'include'
             })
             .then(response => {
-                if (response.ok) {
-                    location.reload();
-                } else {
-                    alert('Error al remover del carrito');
-                }
+                if (response.ok) location.reload();
+                else alert('Error al remover del carrito');
             })
             .catch(error => {
                 console.error('Error:', error);
                 alert('Error al remover del carrito');
             });
         }
-
         function checkout() {
             if (confirm('¿Estás seguro de generar la compra?')) {
-                fetch('/cart/checkout', { 
+                fetch('/cart/checkout', {
                     method: 'POST',
                     credentials: 'include'
                 })
@@ -166,3 +131,4 @@
     </script>
 </body>
 </html>
+

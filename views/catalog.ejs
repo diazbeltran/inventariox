@@ -17,56 +17,30 @@
         .logout-btn:hover { background: #c82333; }
         .cart-btn { background: #28a745; color: white; padding: 10px 15px; border: none; border-radius: 5px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
         .cart-btn:hover { background: #218838; }
-
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         .product-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: all 0.3s; }
         .product-card:hover { transform: translateY(-10px); box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
-        
         .product-image { height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3em; }
         .product-info { padding: 20px; }
         .product-name { font-size: 1.2em; font-weight: bold; color: #333; margin: 10px 0; }
         .product-description { color: #999; font-size: 0.9em; margin-bottom: 10px; }
         .product-price { font-size: 1.5em; color: #28a745; font-weight: bold; margin: 10px 0; }
-        
         .stock-info { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; padding-top: 15px; border-top: 1px solid #eee; }
         .stock-badge { display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 0.85em; }
         .stock-available { background: #d4edda; color: #155724; }
         .stock-low { background: #fff3cd; color: #856404; }
         .stock-out { background: #f8d7da; color: #721c24; }
-
         .empty-state { background: white; padding: 60px 20px; text-align: center; border-radius: 8px; }
         .empty-state i { font-size: 4em; color: #ccc; }
         .empty-state h2 { color: #999; }
-
         .btn-add-cart { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin-top: 10px; width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
         .btn-add-cart:hover { background: #0056b3; }
-
         .discount-badge { background: #dc3545; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em; margin-left: 5px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1><i class="fas fa-shopping-bag"></i> Catálogo de Productos</h1>
-            <div class="user-section">
-                <a href="/cart" class="cart-btn"><i class="fas fa-shopping-cart"></i> Carrito</a>
-                <div class="user-info">
-                    <p>Bienvenido</p>
-                    <p style="font-weight: bold; color: #667eea;"><%= user.username %></p>
-                    <span class="user-role">
-                        <% if (user.role === 'seller') { %>
-                            <i class="fas fa-store"></i> Vendedor
-                        <% } else { %>
-                            <i class="fas fa-user"></i> Cliente
-                        <% } %>
-                    </span>
-                </div>
-                <form action="/logout" method="POST" style="margin: 0;">
-                    <button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
-                </form>
-            </div>
-        </div>
-
+        <%- include('partials/shop-header', { title: 'Catálogo de Productos', icon: 'fa-shopping-bag', showCart: true, user }) %>
         <% if (products.length === 0) { %>
             <div class="empty-state">
                 <i class="fas fa-boxes"></i>
@@ -77,9 +51,7 @@
             <div class="products-grid">
                 <% products.forEach(product => { %>
                     <div class="product-card">
-                        <div class="product-image">
-                            <i class="fas fa-box"></i>
-                        </div>
+                        <div class="product-image"><i class="fas fa-box"></i></div>
                         <div class="product-info">
                             <h3 class="product-name"><%= product.name %></h3>
                             <p class="product-description"><%= product.description || 'Sin descripción' %></p>
@@ -95,11 +67,9 @@
                             <% } else { %>
                                 <div class="product-price"><i class="fas fa-dollar-sign"></i><%= product.price.toFixed(2) %></div>
                             <% } %>
-                            
                             <div class="stock-info">
                                 <span><i class="fas fa-cubes"></i> Stock: <%= product.stock %></span>
                             </div>
-
                             <% if (product.stock > 10) { %>
                                 <span class="stock-badge stock-available"><i class="fas fa-check-circle"></i> Disponible</span>
                             <% } else if (product.stock > 0) { %>
@@ -118,16 +88,13 @@
     </div>
     <script>
         function addToCart(productId) {
-            fetch('/cart/add/' + productId, { 
+            fetch('/cart/add/' + productId, {
                 method: 'POST',
                 credentials: 'include'
             })
             .then(response => {
-                if (response.ok) {
-                    alert('Producto agregado al carrito');
-                } else {
-                    alert('Error al agregar al carrito');
-                }
+                if (response.ok) alert('Producto agregado al carrito');
+                else alert('Error al agregar al carrito');
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -135,3 +102,6 @@
             });
         }
     </script>
+</body>
+</html>
+

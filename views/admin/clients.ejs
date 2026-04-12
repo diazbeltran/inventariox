@@ -15,23 +15,19 @@
         .menu-item i { margin-right: 10px; width: 20px; }
         .main { margin-left: 250px; padding: 30px; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-
         .add-btn { background: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 8px; text-decoration: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         .add-btn:hover { background: #218838; }
-
         .clients-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         .client-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .client-name { font-size: 1.2em; font-weight: bold; color: #333; margin-bottom: 10px; }
         .client-info { color: #666; font-size: 0.9em; margin-bottom: 8px; }
         .client-info i { margin-right: 8px; color: #667eea; width: 20px; }
         .client-actions { display: flex; gap: 10px; margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; }
-
         .btn { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; transition: all 0.3s; flex: 1; justify-content: center; }
         .btn-edit { background: #007bff; color: white; }
         .btn-edit:hover { background: #0056b3; }
         .btn-delete { background: #dc3545; color: white; }
         .btn-delete:hover { background: #c82333; }
-
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
         .modal.active { display: block; }
         .modal-content { background-color: white; margin: 5% auto; padding: 30px; border-radius: 8px; width: 90%; max-width: 500px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
@@ -47,26 +43,12 @@
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="logo"><i class="fas fa-boxes"></i> InventarioX</div>
-        <a href="/admin/dashboard" class="menu-item"><i class="fas fa-chart-bar"></i> Dashboard</a>
-        <a href="/admin/products" class="menu-item"><i class="fas fa-box"></i> Productos</a>
-        <a href="/admin/clients" class="menu-item active"><i class="fas fa-users"></i> Proveedores</a>
-        <a href="/admin/offers" class="menu-item"><i class="fas fa-tag"></i> Ofertas</a>
-        <hr style="margin: 20px 0; opacity: 0.3;">
-        <form action="/logout" method="POST" style="margin-top: auto;">
-            <button type="submit" class="menu-item" style="background: #dc3545; border: none; cursor: pointer; text-align: left;"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
-        </form>
-    </div>
-
-    <!-- Main Content -->
+    <%- include('../partials/admin-sidebar', { section: 'clients' }) %>
     <div class="main">
         <div class="header">
             <h1><i class="fas fa-users"></i> Mantenedor de Proveedores</h1>
             <button class="add-btn" onclick="openModal()"><i class="fas fa-plus"></i> Nuevo Proveedor</button>
         </div>
-
         <% if (clients.length === 0) { %>
             <div style="background: white; padding: 40px; text-align: center; border-radius: 8px;">
                 <i class="fas fa-inbox" style="font-size: 3em; color: #ccc; margin-bottom: 20px;"></i>
@@ -78,17 +60,11 @@
                 <% clients.forEach(client => { %>
                     <div class="client-card">
                         <h3 class="client-name"><i class="fas fa-building"></i> <%= client.name %></h3>
-                        <div class="client-info">
-                            <i class="fas fa-envelope"></i> <%= client.email %>
-                        </div>
-                        <div class="client-info">
-                            <i class="fas fa-phone"></i> <%= client.phone %>
-                        </div>
-                        <div class="client-info">
-                            <i class="fas fa-map-marker-alt"></i> <%= client.address %>
-                        </div>
+                        <div class="client-info"><i class="fas fa-envelope"></i> <%= client.email %></div>
+                        <div class="client-info"><i class="fas fa-phone"></i> <%= client.phone %></div>
+                        <div class="client-info"><i class="fas fa-map-marker-alt"></i> <%= client.address %></div>
                         <div class="client-actions">
-                            <button class="btn btn-edit"><i class="fas fa-edit"></i> Editar</button>
+                            <button onclick="openEditModal(<%= client.id %>)" class="btn btn-edit"><i class="fas fa-edit"></i> Editar</button>
                             <button onclick="deleteClient(<%= client.id %>)" class="btn btn-delete"><i class="fas fa-trash"></i> Eliminar</button>
                         </div>
                     </div>
@@ -96,8 +72,6 @@
             </div>
         <% } %>
     </div>
-
-    <!-- Modal Formulario -->
     <div id="clientModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -125,28 +99,69 @@
             </form>
         </div>
     </div>
-
+    <div id="editClientModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Proveedor</h2>
+                <span class="close" onclick="closeEditModal()">&times;</span>
+            </div>
+            <form id="editClientForm">
+                <input type="hidden" id="editClientId" name="id">
+                <div class="form-group">
+                    <label for="editName">Nombre *</label>
+                    <input type="text" id="editName" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="editEmail">Email *</label>
+                    <input type="email" id="editEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="editPhone">Teléfono *</label>
+                    <input type="tel" id="editPhone" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="editAddress">Dirección *</label>
+                    <input type="text" id="editAddress" name="address" required>
+                </div>
+                <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Actualizar Proveedor</button>
+            </form>
+        </div>
+    </div>
     <script>
         function openModal() {
             document.getElementById('clientModal').classList.add('active');
         }
-
         function closeModal() {
             document.getElementById('clientModal').classList.remove('active');
         }
-
+        function openEditModal(id) {
+            fetch(`/clients/${id}`, { credentials: 'include' })
+            .then(response => response.json())
+            .then(client => {
+                document.getElementById('editClientId').value = client.id;
+                document.getElementById('editName').value = client.name;
+                document.getElementById('editEmail').value = client.email;
+                document.getElementById('editPhone').value = client.phone;
+                document.getElementById('editAddress').value = client.address;
+                document.getElementById('editClientModal').classList.add('active');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al cargar proveedor');
+            });
+        }
+        function closeEditModal() {
+            document.getElementById('editClientModal').classList.remove('active');
+        }
         function deleteClient(id) {
             if (confirm('¿Estás seguro de que quieres eliminar este proveedor?')) {
-                fetch(`/clients/${id}`, { 
+                fetch(`/clients/${id}`, {
                     method: 'DELETE',
                     credentials: 'include'
                 })
                 .then(response => {
-                    if (response.ok) {
-                        location.reload();
-                    } else {
-                        alert('Error al eliminar proveedor');
-                    }
+                    if (response.ok) location.reload();
+                    else alert('Error al eliminar proveedor');
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -154,21 +169,14 @@
                 });
             }
         }
-
         document.getElementById('clientForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
             const data = Object.fromEntries(formData);
-
-            if (!confirm(`¿Estás seguro de crear el proveedor "${data.name}"?`)) {
-                return;
-            }
-
+            if (!confirm(`¿Estás seguro de crear el proveedor "${data.name}"?`)) return;
             fetch('/clients', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
                 credentials: 'include'
             })
@@ -185,13 +193,38 @@
                 alert('Error al guardar proveedor');
             });
         });
-
+        document.getElementById('editClientForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            const id = data.id;
+            delete data.id;
+            fetch(`/clients/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+                credentials: 'include'
+            })
+            .then(response => {
+                if (response.ok) {
+                    closeEditModal();
+                    location.reload();
+                } else {
+                    alert('Error al actualizar proveedor');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al actualizar proveedor');
+            });
+        });
         window.onclick = function(event) {
             const modal = document.getElementById('clientModal');
-            if (event.target == modal) {
-                closeModal();
-            }
+            const editModal = document.getElementById('editClientModal');
+            if (event.target == modal) closeModal();
+            if (event.target == editModal) closeEditModal();
         }
     </script>
 </body>
 </html>
+

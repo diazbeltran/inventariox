@@ -48,9 +48,8 @@
             </div>
             <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Actualizar Producto</button>
         </form>
-        <a href="/" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Volver a la lista</a>
+        <a href="<%= user.role === 'admin' ? '/admin/products' : '/catalog' %>" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Volver</a>
     </div>
-
     <script>
         document.getElementById('editForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -64,10 +63,11 @@
             fetch(`/products/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                body: JSON.stringify(data),
+                credentials: 'include'
             })
             .then(response => response.json())
-            .then(() => window.location.href = '/');
+            .then(() => window.location.href = '<%= user.role === "admin" ? "/admin/products" : "/catalog" %>');
         });
     </script>
 </body>
