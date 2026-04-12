@@ -335,6 +335,14 @@ app.get('/admin/clients', (req, res) => {
     res.render('admin/clients', { clients, user: req.session.user });
 });
 
+// GET /admin/offers - Mantenedor de ofertas
+app.get('/admin/offers', (req, res) => {
+    if (!req.session.user || req.session.user.role !== 'admin') {
+        return res.redirect('/');
+    }
+    res.render('admin/offers', { offers, products, user: req.session.user });
+});
+
 // POST /clients - Crear nuevo proveedor
 app.post('/clients', requireAuth, requireRole('admin'), (req, res) => {
     const { name, email, phone, address } = req.body;
