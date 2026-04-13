@@ -2,240 +2,524 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Mantenedor de Productos - InventarioX</title>
+    <title>Inventario - InventarioX</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
-        .sidebar { position: fixed; left: 0; top: 0; width: 250px; height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; color: white; overflow-y: auto; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6fb; color: #26323f; }
+        .sidebar { position: fixed; left: 0; top: 0; width: 250px; height: 100vh; background: linear-gradient(180deg, #154c79 0%, #1f6aa5 100%); padding: 20px; color: white; overflow-y: auto; }
         .logo { font-size: 1.5em; font-weight: bold; margin-bottom: 30px; text-align: center; }
-        .menu-item { padding: 12px 15px; margin: 5px 0; border-radius: 5px; text-decoration: none; color: white; display: block; transition: all 0.3s; }
-        .menu-item:hover { background: rgba(255,255,255,0.2); }
-        .menu-item.active { background: rgba(255,255,255,0.3); border-left: 4px solid white; }
-        .menu-item i { margin-right: 10px; width: 20px; }
-        .main { margin-left: 250px; padding: 30px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .add-btn { background: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 8px; text-decoration: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
-        .add-btn:hover { background: #218838; }
-        table { width: 100%; background: white; border-collapse: collapse; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: #f8f9fa; color: #495057; font-weight: 600; text-transform: uppercase; font-size: 0.9em; }
-        tr:hover { background: #f8f9fa; }
-        .actions { display: flex; gap: 10px; }
-        .btn { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; transition: all 0.3s; }
-        .btn-edit { background: #007bff; color: white; }
-        .btn-edit:hover { background: #0056b3; }
-        .btn-delete { background: #dc3545; color: white; }
-        .btn-delete:hover { background: #c82333; }
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
-        .modal.active { display: block; }
-        .modal-content { background-color: white; margin: 5% auto; padding: 30px; border-radius: 8px; width: 90%; max-width: 500px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .close { font-size: 2em; cursor: pointer; color: #aaa; }
-        .close:hover { color: #000; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; color: #333; font-weight: 500; }
-        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 1em; }
-        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
-        .form-group textarea { resize: vertical; min-height: 80px; }
-        .btn-submit { width: 100%; background: #667eea; color: white; padding: 12px; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px; }
-        .btn-submit:hover { background: #5568d3; }
+        .menu-item { padding: 12px 15px; margin: 5px 0; border-radius: 8px; text-decoration: none; color: white; display: block; transition: all 0.2s; }
+        .menu-item:hover, .menu-item.active { background: rgba(255,255,255,0.15); }
+        .main { margin-left: 250px; padding: 28px; }
+        .header { background: white; padding: 24px; border-radius: 18px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(19,41,61,0.08); display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+        .header h1 { margin-bottom: 8px; }
+        .header p { color: #607081; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 10px 25px rgba(19,41,61,0.08); }
+        .stat-card .label { color: #6c7b88; font-size: 0.95em; margin-bottom: 10px; }
+        .stat-card .value { font-size: 1.8em; font-weight: 700; color: #154c79; }
+        .layout { display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px; }
+        .stack { display: grid; gap: 20px; }
+        .panel { background: white; border-radius: 18px; padding: 22px; box-shadow: 0 10px 25px rgba(19,41,61,0.08); }
+        .panel h2 { font-size: 1.15em; margin-bottom: 8px; }
+        .panel h3 { font-size: 1em; margin-bottom: 12px; }
+        .panel p.helper { color: #6c7b88; margin-bottom: 18px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+        .form-group { display: grid; gap: 6px; margin-bottom: 12px; }
+        label { font-size: 0.95em; font-weight: 600; color: #324354; }
+        input, textarea, select { width: 100%; border: 1px solid #d8e0e8; border-radius: 10px; padding: 11px 12px; font: inherit; }
+        textarea { min-height: 86px; resize: vertical; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #1f6aa5; box-shadow: 0 0 0 3px rgba(31,106,165,0.12); }
+        .btn { border: none; border-radius: 10px; padding: 11px 16px; cursor: pointer; font: inherit; font-weight: 600; }
+        .btn-primary { background: #1f6aa5; color: white; }
+        .btn-primary:hover { background: #185685; }
+        .btn-secondary { background: #ebf2f8; color: #154c79; }
+        .btn-danger { background: #dc3545; color: white; }
+        .ingredients-list { display: grid; gap: 10px; margin-bottom: 12px; }
+        .ingredient-row { display: grid; grid-template-columns: 1.6fr 0.8fr auto; gap: 10px; align-items: end; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #edf1f5; vertical-align: top; }
+        th { color: #61707f; font-size: 0.86em; text-transform: uppercase; letter-spacing: 0.03em; }
+        .chip { display: inline-block; padding: 5px 10px; border-radius: 999px; font-size: 0.82em; font-weight: 600; }
+        .chip-blue { background: #dfefff; color: #0c4a7d; }
+        .chip-green { background: #dff5e9; color: #13653c; }
+        .chip-orange { background: #fff1dd; color: #9a5a05; }
+        .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .muted { color: #71808e; }
+        .recipe-list { display: grid; gap: 4px; }
+        .section-title { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+        @media (max-width: 1100px) {
+            .layout { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 720px) {
+            .sidebar { position: static; width: 100%; height: auto; }
+            .main { margin-left: 0; }
+            .header { flex-direction: column; align-items: flex-start; }
+            .ingredient-row { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
     <%- include('../partials/admin-sidebar', { section: 'products' }) %>
     <div class="main">
         <div class="header">
-            <h1><i class="fas fa-box"></i> Mantenedor de Productos</h1>
-            <button class="add-btn" onclick="openModal()"><i class="fas fa-plus"></i> Nuevo Producto</button>
-        </div>
-        <% if (products.length === 0) { %>
-            <div style="background: white; padding: 40px; text-align: center; border-radius: 8px;">
-                <i class="fas fa-inbox" style="font-size: 3em; color: #ccc; margin-bottom: 20px;"></i>
-                <h2 style="color: #666;">No hay productos registrados</h2>
-                <p style="color: #999;">Comienza agregando tu primer producto</p>
+            <div>
+                <h1><i class="fas fa-layer-group"></i> Inventario Maestro</h1>
+                <p>Administra bodegas, categorias, insumos y productos compuestos desde una sola vista.</p>
             </div>
-        <% } else { %>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Descripción</th>
-                        <th>Precio</th>
-                        <th>Stock</th>
-                        <th>Valor Total</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% products.forEach(product => { %>
-                        <tr>
-                            <td><strong>#<%= product.id %></strong></td>
-                            <td><strong><%= product.name %></strong></td>
-                            <td><%= product.description %></td>
-                            <td><i class="fas fa-dollar-sign"></i> <%= product.price.toFixed(2) %></td>
-                            <td><%= product.stock %></td>
-                            <td>$<%= (product.price * product.stock).toFixed(2) %></td>
-                            <td class="actions">
-                                <button onclick="openEditModal(<%= product.id %>)" class="btn btn-edit"><i class="fas fa-edit"></i> Editar</button>
-                                <a href="#" onclick="deleteProduct(<%= product.id %>)" class="btn btn-delete"><i class="fas fa-trash"></i> Eliminar</a>
-                            </td>
-                        </tr>
-                    <% }); %>
-                </tbody>
-            </table>
-        <% } %>
-    </div>
-    <div id="productModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Nuevo Producto</h2>
-                <span class="close" onclick="closeModal()">&times;</span>
+            <div>
+                <strong><%= user.username %></strong><br>
+                <span class="muted">Administrador</span>
             </div>
-            <form id="productForm">
-                <div class="form-group">
-                    <label for="name">Nombre *</label>
-                    <input type="text" id="name" name="name" required>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="label">Bodegas</div>
+                <div class="value"><%= warehouses.length %></div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Categorias</div>
+                <div class="value"><%= categories.length %></div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Insumos</div>
+                <div class="value"><%= supplies.length %></div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Productos</div>
+                <div class="value"><%= products.length %></div>
+            </div>
+        </div>
+
+        <div class="layout">
+            <div class="stack">
+                <div class="panel">
+                    <div class="section-title">
+                        <div>
+                            <h2>Nuevo Producto</h2>
+                            <p class="helper">Los productos pueden venderse con precio propio y, si agregas receta, su stock se calcula desde los insumos.</p>
+                        </div>
+                    </div>
+                    <form id="productForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="productName">Nombre</label>
+                                <input id="productName" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="productPrice">Precio</label>
+                                <input id="productPrice" name="price" type="number" min="0" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="productStock">Stock manual</label>
+                                <input id="productStock" name="stock" type="number" min="0" step="1" value="0">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="productDescription">Descripcion</label>
+                            <textarea id="productDescription" name="description"></textarea>
+                        </div>
+                        <h3>Receta del producto</h3>
+                        <div id="ingredientsList" class="ingredients-list"></div>
+                        <div class="actions" style="margin-bottom: 12px;">
+                            <button type="button" class="btn btn-secondary" onclick="addIngredientRow()">Agregar insumo</button>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Guardar producto</button>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label for="description">Descripción</label>
-                    <textarea id="description" name="description"></textarea>
+
+                <div class="panel">
+                    <div class="section-title">
+                        <div>
+                            <h2>Productos Registrados</h2>
+                            <p class="helper">Si un producto tiene receta, el stock visible es el maximo fabricable con los insumos disponibles.</p>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Precio</th>
+                                    <th>Stock</th>
+                                    <th>Tipo</th>
+                                    <th>Receta</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (products.length === 0) { %>
+                                    <tr><td colspan="6" class="muted">No hay productos registrados.</td></tr>
+                                <% } %>
+                                <% products.forEach(product => { %>
+                                    <tr>
+                                        <td>
+                                            <strong><%= product.name %></strong><br>
+                                            <span class="muted"><%= product.description || 'Sin descripcion' %></span>
+                                        </td>
+                                        <td>$<%= product.price.toFixed(2) %></td>
+                                        <td><%= product.stock %></td>
+                                        <td>
+                                            <% if (product.usesRecipe) { %>
+                                                <span class="chip chip-blue">Compuesto</span>
+                                            <% } else { %>
+                                                <span class="chip chip-orange">Manual</span>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <% if (product.recipe.length === 0) { %>
+                                                <span class="muted">Sin receta</span>
+                                            <% } else { %>
+                                                <div class="recipe-list">
+                                                    <% product.recipe.forEach(item => { %>
+                                                        <span><%= item.supplyName %> x <%= item.quantity %> <%= item.unit %></span>
+                                                    <% }) %>
+                                                </div>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <div class="actions">
+                                                <button class="btn btn-danger" onclick="deleteEntity('/products/<%= product.id %>', 'producto')">Eliminar</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="price">Precio *</label>
-                    <input type="number" id="price" step="0.01" name="price" required>
+            </div>
+
+            <div class="stack">
+                <div class="panel">
+                    <h2>Base Operativa</h2>
+                    <p class="helper">Primero crea bodegas y categorias, luego registra insumos con stock inicial.</p>
+                    <form id="warehouseForm">
+                        <div class="form-group">
+                            <label for="warehouseName">Nueva bodega</label>
+                            <input id="warehouseName" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="warehouseDescription">Descripcion</label>
+                            <input id="warehouseDescription" name="description">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Crear bodega</button>
+                    </form>
+                    <hr style="margin: 18px 0; border: none; border-top: 1px solid #edf1f5;">
+                    <form id="categoryForm">
+                        <div class="form-group">
+                            <label for="categoryName">Nueva categoria</label>
+                            <input id="categoryName" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="categoryDescription">Descripcion</label>
+                            <input id="categoryDescription" name="description">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Crear categoria</button>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label for="stock">Stock *</label>
-                    <input type="number" id="stock" name="stock" required>
+
+                <div class="panel">
+                    <h2>Nuevo Insumo</h2>
+                    <p class="helper">Cada insumo puede pertenecer a una categoria y guardar stock por bodega.</p>
+                    <form id="supplyForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="supplyName">Nombre</label>
+                                <input id="supplyName" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="supplyUnit">Unidad</label>
+                                <input id="supplyUnit" name="unit" value="unidad" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="supplyCost">Costo</label>
+                                <input id="supplyCost" name="cost" type="number" min="0" step="0.01" value="0">
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="supplyCategory">Categoria</label>
+                                <select id="supplyCategory" name="categoryId">
+                                    <option value="">Sin categoria</option>
+                                    <% categories.forEach(category => { %>
+                                        <option value="<%= category.id %>"><%= category.name %></option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="supplyWarehouse">Bodega inicial</label>
+                                <select id="supplyWarehouse" name="warehouseId">
+                                    <option value="">Sin stock inicial</option>
+                                    <% warehouses.forEach(warehouse => { %>
+                                        <option value="<%= warehouse.id %>"><%= warehouse.name %></option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="supplyInitialStock">Stock inicial</label>
+                                <input id="supplyInitialStock" name="initialStock" type="number" min="0" step="0.01" value="0">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="supplyDescription">Descripcion</label>
+                            <textarea id="supplyDescription" name="description"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Guardar insumo</button>
+                    </form>
                 </div>
-                <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Guardar Producto</button>
-            </form>
+
+                <div class="panel">
+                    <h2>Insumos y ubicaciones</h2>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Insumo</th>
+                                    <th>Categoria</th>
+                                    <th>Unidad</th>
+                                    <th>Stock</th>
+                                    <th>Bodegas</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (supplies.length === 0) { %>
+                                    <tr><td colspan="6" class="muted">No hay insumos registrados.</td></tr>
+                                <% } %>
+                                <% supplies.forEach(supply => { %>
+                                    <tr>
+                                        <td>
+                                            <strong><%= supply.name %></strong><br>
+                                            <span class="muted">$<%= supply.cost.toFixed(2) %> por <%= supply.unit %></span>
+                                        </td>
+                                        <td><%= supply.categoryName || 'Sin categoria' %></td>
+                                        <td><%= supply.unit %></td>
+                                        <td><%= supply.stock %></td>
+                                        <td>
+                                            <% if (!supply.locations || supply.locations.length === 0) { %>
+                                                <span class="muted">Sin stock</span>
+                                            <% } else { %>
+                                                <div class="recipe-list">
+                                                    <% supply.locations.forEach(location => { %>
+                                                        <span><%= location.warehouseName %>: <%= location.quantity %></span>
+                                                    <% }) %>
+                                                </div>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <div class="actions">
+                                                <button class="btn btn-secondary" onclick="openStockPrompt(<%= supply.id %>, '<%= supply.name %>')">Ajustar stock</button>
+                                                <button class="btn btn-danger" onclick="deleteEntity('/supplies/<%= supply.id %>', 'insumo')">Eliminar</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>Bodegas y categorias</h2>
+                    <div class="table-wrap" style="margin-bottom: 18px;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Bodega</th>
+                                    <th>Descripcion</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% warehouses.forEach(warehouse => { %>
+                                    <tr>
+                                        <td><%= warehouse.name %></td>
+                                        <td><%= warehouse.description || 'Sin descripcion' %></td>
+                                        <td><button class="btn btn-danger" onclick="deleteEntity('/warehouses/<%= warehouse.id %>', 'bodega')">Eliminar</button></td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Categoria</th>
+                                    <th>Descripcion</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% categories.forEach(category => { %>
+                                    <tr>
+                                        <td><%= category.name %></td>
+                                        <td><%= category.description || 'Sin descripcion' %></td>
+                                        <td><button class="btn btn-danger" onclick="deleteEntity('/categories/<%= category.id %>', 'categoria')">Eliminar</button></td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    <div id="editProductModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Editar Producto</h2>
-                <span class="close" onclick="closeEditModal()">&times;</span>
-            </div>
-            <form id="editProductForm">
-                <input type="hidden" id="editProductId" name="id">
-                <div class="form-group">
-                    <label for="editName">Nombre *</label>
-                    <input type="text" id="editName" name="name" required>
-                </div>
-                <div class="form-group">
-                    <label for="editDescription">Descripción</label>
-                    <textarea id="editDescription" name="description"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="editPrice">Precio *</label>
-                    <input type="number" id="editPrice" step="0.01" name="price" required>
-                </div>
-                <div class="form-group">
-                    <label for="editStock">Stock *</label>
-                    <input type="number" id="editStock" name="stock" required>
-                </div>
-                <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Actualizar Producto</button>
-            </form>
-        </div>
-    </div>
+
     <script>
-        function openModal() {
-            document.getElementById('productModal').classList.add('active');
+        const supplies = <%- JSON.stringify(supplies.map(supply => ({ id: supply.id, name: supply.name, unit: supply.unit }))) %>;
+        const warehouses = <%- JSON.stringify(warehouses) %>;
+
+        function formToObject(form) {
+            return Object.fromEntries(new FormData(form).entries());
         }
-        function closeModal() {
-            document.getElementById('productModal').classList.remove('active');
+
+        async function sendJson(url, method, data) {
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                let message = 'No se pudo completar la accion';
+                try {
+                    const payload = await response.json();
+                    message = payload.error || message;
+                } catch (error) {
+                }
+                throw new Error(message);
+            }
+
+            return response.status === 204 ? null : response.json();
         }
-        function openEditModal(id) {
-            fetch(`/products/${id}`)
-                .then(response => response.json())
-                .then(product => {
-                    document.getElementById('editProductId').value = product.id;
-                    document.getElementById('editName').value = product.name;
-                    document.getElementById('editDescription').value = product.description || '';
-                    document.getElementById('editPrice').value = product.price;
-                    document.getElementById('editStock').value = product.stock;
-                    document.getElementById('editProductModal').classList.add('active');
-                })
-                .catch(error => {
-                    console.error('Error loading product:', error);
-                    alert('Error al cargar el producto');
+
+        function buildSupplyOptions(selectedId = '') {
+            return `
+                <option value="">Selecciona un insumo</option>
+                ${supplies.map(supply => `<option value="${supply.id}" ${String(selectedId) === String(supply.id) ? 'selected' : ''}>${supply.name} (${supply.unit})</option>`).join('')}
+            `;
+        }
+
+        function addIngredientRow(selectedId = '', quantity = '') {
+            const container = document.getElementById('ingredientsList');
+            const row = document.createElement('div');
+            row.className = 'ingredient-row';
+            row.innerHTML = `
+                <div class="form-group">
+                    <label>Insumo</label>
+                    <select class="ingredient-supply">${buildSupplyOptions(selectedId)}</select>
+                </div>
+                <div class="form-group">
+                    <label>Cantidad</label>
+                    <input class="ingredient-quantity" type="number" min="0.01" step="0.01" value="${quantity}">
+                </div>
+                <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">Quitar</button>
+            `;
+            container.appendChild(row);
+        }
+
+        function collectRecipe() {
+            return Array.from(document.querySelectorAll('.ingredient-row'))
+                .map(row => ({
+                    supplyId: row.querySelector('.ingredient-supply').value,
+                    quantity: row.querySelector('.ingredient-quantity').value
+                }))
+                .filter(item => item.supplyId && parseFloat(item.quantity) > 0);
+        }
+
+        async function deleteEntity(url, label) {
+            if (!confirm(`Seguro que quieres eliminar este ${label}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(url, { method: 'DELETE', credentials: 'include' });
+                if (!response.ok) {
+                    const payload = await response.json().catch(() => ({}));
+                    throw new Error(payload.error || `No se pudo eliminar el ${label}`);
+                }
+                location.reload();
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        async function openStockPrompt(supplyId, supplyName) {
+            if (warehouses.length === 0) {
+                alert('Primero crea una bodega.');
+                return;
+            }
+
+            const warehouseId = prompt(`Ingresa el ID de la bodega para ajustar stock de "${supplyName}":\n${warehouses.map(warehouse => `${warehouse.id}: ${warehouse.name}`).join('\n')}`);
+            if (!warehouseId) {
+                return;
+            }
+
+            const quantity = prompt('Ingresa cantidad a sumar o restar. Usa negativo para descontar.');
+            if (!quantity) {
+                return;
+            }
+
+            try {
+                await sendJson(`/supplies/${supplyId}/stock`, 'POST', {
+                    warehouseId: parseInt(warehouseId, 10),
+                    quantity: parseFloat(quantity)
                 });
-        }
-        function closeEditModal() {
-            document.getElementById('editProductModal').classList.remove('active');
-        }
-        function deleteProduct(id) {
-            if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-                fetch(`/products/${id}`, {
-                    method: 'DELETE',
-                    credentials: 'include'
-                }).then(() => location.reload());
+                location.reload();
+            } catch (error) {
+                alert(error.message);
             }
         }
-        document.getElementById('productForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const data = Object.fromEntries(formData);
-            if (!confirm(`¿Estás seguro de crear el producto "${data.name}"?`)) {
-                return;
+
+        document.getElementById('warehouseForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            try {
+                await sendJson('/warehouses', 'POST', formToObject(event.target));
+                location.reload();
+            } catch (error) {
+                alert(error.message);
             }
-            fetch('/products', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-                credentials: 'include'
-            })
-            .then(response => {
-                if (response.ok) {
-                    closeModal();
-                    location.reload();
-                } else {
-                    alert('Error al guardar el producto');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al guardar el producto');
-            });
         });
-        document.getElementById('editProductForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const data = Object.fromEntries(formData);
-            const id = data.id;
-            delete data.id;
-            if (!confirm(`¿Estás seguro de actualizar el producto "${data.name}"?`)) {
-                return;
+
+        document.getElementById('categoryForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            try {
+                await sendJson('/categories', 'POST', formToObject(event.target));
+                location.reload();
+            } catch (error) {
+                alert(error.message);
             }
-            fetch(`/products/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-                credentials: 'include'
-            })
-            .then(response => {
-                if (response.ok) {
-                    closeEditModal();
-                    location.reload();
-                } else {
-                    alert('Error al actualizar el producto');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al actualizar el producto');
-            });
         });
-        window.onclick = function(event) {
-            const addModal = document.getElementById('productModal');
-            const editModal = document.getElementById('editProductModal');
-            if (event.target == addModal) closeModal();
-            if (event.target == editModal) closeEditModal();
-        }
+
+        document.getElementById('supplyForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            try {
+                await sendJson('/supplies', 'POST', formToObject(event.target));
+                location.reload();
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+
+        document.getElementById('productForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const data = formToObject(event.target);
+            data.recipe = collectRecipe();
+            try {
+                await sendJson('/products', 'POST', data);
+                location.reload();
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+
+        addIngredientRow();
     </script>
 </body>
 </html>

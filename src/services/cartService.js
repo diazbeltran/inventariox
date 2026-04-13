@@ -1,4 +1,4 @@
-import { getProductById, removeProductStock } from './productService.js';
+import { consumeProduct, getProductById } from './productService.js';
 import { getActiveOfferForProduct } from './offerService.js';
 
 function ensureCart(session) {
@@ -94,7 +94,13 @@ export async function checkoutCart(session) {
   }
 
   for (const item of cart) {
-    await removeProductStock(item.id, item.quantity);
+    const result = await consumeProduct(item.id, item.quantity);
+    if (result === null) {
+      return { error: 'Uno de los productos ya no existe' };
+    }
+    if (result === false) {
+      return { error: `Stock insuficiente para ${item.name || 'uno de los productos'}` };
+    }
   }
 
   session.cart = [];

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { requireAuth } from '../middleware/auth.js';
 import { listClients } from '../services/clientService.js';
+import { getInventoryStructure } from '../services/inventoryService.js';
 import { getCatalogProductsWithOffers, listOffers } from '../services/offerService.js';
 import { getInventorySummary, getProductById, listProducts } from '../services/productService.js';
 
@@ -29,14 +30,19 @@ router.get('/admin/dashboard', requireAuth, async (req, res, next) => {
       return res.redirect('/');
     }
 
-    const { products, totalValue, totalStock } = await getInventorySummary();
+    const { products, totalValue, totalStock, recipeProducts, manualProducts } = await getInventorySummary();
+    const inventory = await getInventoryStructure();
     return res.render('admin/dashboard', {
       user: req.session.user,
       products,
+      supplies: inventory.supplies,
+      warehouses: inventory.warehouses,
       clients: await listClients(),
       offers: await listOffers(),
       totalValue,
-      totalStock
+      totalStock,
+      recipeProducts,
+      manualProducts
     });
   } catch (error) {
     return next(error);
@@ -49,7 +55,14 @@ router.get('/admin/products', requireAuth, async (req, res, next) => {
       return res.redirect('/');
     }
 
-    return res.render('admin/products', { products: await listProducts(), user: req.session.user });
+    const inventory = await getInventoryStructure();
+    return res.render('admin/products', {
+      products: await listProducts(),
+      supplies: inventory.supplies,
+      categories: inventory.categories,
+      warehouses: inventory.warehouses,
+      user: req.session.user
+    });
   } catch (error) {
     return next(error);
   }

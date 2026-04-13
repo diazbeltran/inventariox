@@ -2,52 +2,45 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Carrito de Compras - InventarioX</title>
+    <title>Carrito - InventarioX</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: linear-gradient(135deg, #154c79 0%, #1f6aa5 100%); min-height: 100vh; }
         .container { max-width: 1200px; margin: 0 auto; }
-        .header { background: white; padding: 20px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { margin: 0; color: #333; }
-        .user-section { display: flex; align-items: center; gap: 20px; }
-        .user-info { text-align: right; }
-        .user-info p { margin: 5px 0; color: #666; }
-        .user-role { background: #e7f3ff; color: #0056b3; padding: 5px 12px; border-radius: 20px; display: inline-block; font-size: 0.9em; }
-        .logout-btn { background: #dc3545; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; }
-        .logout-btn:hover { background: #c82333; }
-        .back-btn { background: #6c757d; color: white; padding: 10px 15px; border: none; border-radius: 5px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
-        .back-btn:hover { background: #5a6268; }
-        .cart-items { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee; }
+        .cart-items, .cart-total, .empty-cart { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 15px 30px rgba(10,24,39,0.15); }
+        .cart-items { margin-bottom: 20px; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #eef2f5; gap: 16px; }
         .cart-item:last-child { border-bottom: none; }
-        .item-info { display: flex; align-items: center; gap: 15px; }
-        .item-image { width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; border-radius: 5px; }
-        .item-details h3 { margin: 0; color: #333; }
-        .item-details p { margin: 5px 0; color: #666; }
+        .item-info { display: flex; align-items: center; gap: 15px; min-width: 0; }
+        .item-image { width: 60px; height: 60px; background: linear-gradient(135deg, #123b5d 0%, #1f6aa5 100%); display: flex; align-items: center; justify-content: center; color: white; border-radius: 12px; }
+        .item-details h3 { margin: 0; color: #243240; }
+        .item-details p { margin: 5px 0; color: #6b7c8b; }
         .item-quantity { display: flex; align-items: center; gap: 10px; }
-        .quantity-btn { background: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
-        .quantity-btn:hover { background: #0056b3; }
-        .item-price { font-weight: bold; color: #28a745; }
-        .remove-btn { background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
-        .remove-btn:hover { background: #c82333; }
-        .cart-total { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: right; }
-        .total-amount { font-size: 1.5em; font-weight: bold; color: #28a745; margin: 10px 0; }
-        .checkout-btn { background: #28a745; color: white; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-size: 1.1em; }
-        .checkout-btn:hover { background: #218838; }
-        .empty-cart { background: white; padding: 60px 20px; text-align: center; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .empty-cart i { font-size: 4em; color: #ccc; }
-        .empty-cart h2 { color: #999; }
+        .quantity-btn, .remove-btn, .checkout-btn { border: none; cursor: pointer; }
+        .quantity-btn { background: #1f6aa5; color: white; padding: 5px 10px; border-radius: 6px; }
+        .remove-btn { background: #dc3545; color: white; padding: 8px 10px; border-radius: 8px; }
+        .item-price { font-weight: bold; color: #13653c; min-width: 90px; text-align: right; }
+        .cart-total { text-align: right; }
+        .total-amount { font-size: 1.6em; font-weight: bold; color: #13653c; margin: 10px 0; }
+        .checkout-btn { background: #13653c; color: white; padding: 14px 26px; border-radius: 10px; font-size: 1em; }
+        .empty-cart { text-align: center; }
+        .empty-cart i { font-size: 4em; color: #c3cfda; }
+        .empty-cart h2 { color: #6b7c8b; margin: 10px 0; }
+        @media (max-width: 720px) {
+            .cart-item { flex-direction: column; align-items: flex-start; }
+            .item-price { text-align: left; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <%- include('partials/shop-header', { title: 'Carrito de Compras', icon: 'fa-shopping-cart', backHref: '/catalog', backLabel: 'Volver al Catálogo', backClass: 'back-btn', user }) %>
+        <%- include('partials/shop-header', { title: 'Carrito de Compras', icon: 'fa-shopping-cart', backHref: '/catalog', backLabel: 'Volver al Catalogo', backClass: 'back-btn', user }) %>
         <% if (cart.length === 0) { %>
             <div class="empty-cart">
                 <i class="fas fa-shopping-cart"></i>
-                <h2>Tu carrito está vacío</h2>
-                <p>Agrega productos desde el catálogo</p>
-                <a href="/catalog" class="checkout-btn" style="text-decoration: none; margin-top: 20px; display: inline-block;">Ir al Catálogo</a>
+                <h2>Tu carrito esta vacio</h2>
+                <p>Agrega productos desde el catalogo.</p>
+                <a href="/catalog" class="checkout-btn" style="text-decoration: none; display: inline-block; margin-top: 18px;">Ir al catalogo</a>
             </div>
         <% } else { %>
             <div class="cart-items">
@@ -57,7 +50,7 @@
                             <div class="item-image"><i class="fas fa-box"></i></div>
                             <div class="item-details">
                                 <h3><%= item.name %></h3>
-                                <p><%= item.description || 'Sin descripción' %></p>
+                                <p><%= item.description || 'Sin descripcion' %></p>
                             </div>
                         </div>
                         <div class="item-quantity">
@@ -71,12 +64,23 @@
                 <% }); %>
             </div>
             <div class="cart-total">
-                <h3>Total: <span class="total-amount">$<%= total.toFixed(2) %></span></h3>
-                <button class="checkout-btn" onclick="checkout()"><i class="fas fa-credit-card"></i> Generar Compra</button>
+                <h3>Total</h3>
+                <div class="total-amount">$<%= total.toFixed(2) %></div>
+                <button class="checkout-btn" onclick="checkout()"><i class="fas fa-credit-card"></i> Generar compra</button>
             </div>
         <% } %>
     </div>
     <script>
+        async function handleResponse(response, successAction) {
+            if (response.ok) {
+                successAction();
+                return;
+            }
+
+            const payload = await response.json().catch(() => ({}));
+            alert(payload.error || 'No se pudo completar la accion');
+        }
+
         function updateQuantity(productId, newQuantity) {
             if (newQuantity < 1) return;
             fetch('/cart/update/' + productId, {
@@ -85,50 +89,34 @@
                 body: JSON.stringify({ quantity: newQuantity }),
                 credentials: 'include'
             })
-            .then(response => {
-                if (response.ok) location.reload();
-                else alert('Error al actualizar cantidad');
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al actualizar cantidad');
-            });
+            .then(response => handleResponse(response, () => location.reload()))
+            .catch(() => alert('Error al actualizar cantidad'));
         }
+
         function removeFromCart(productId) {
             fetch('/cart/remove/' + productId, {
                 method: 'POST',
                 credentials: 'include'
             })
-            .then(response => {
-                if (response.ok) location.reload();
-                else alert('Error al remover del carrito');
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al remover del carrito');
-            });
+            .then(response => handleResponse(response, () => location.reload()))
+            .catch(() => alert('Error al remover del carrito'));
         }
+
         function checkout() {
-            if (confirm('¿Estás seguro de generar la compra?')) {
-                fetch('/cart/checkout', {
-                    method: 'POST',
-                    credentials: 'include'
-                })
-                .then(response => {
-                    if (response.ok) {
-                        alert('Compra generada exitosamente');
-                        location.href = '/catalog';
-                    } else {
-                        alert('Error al generar la compra');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al generar la compra');
-                });
+            if (!confirm('Seguro que quieres generar la compra?')) {
+                return;
             }
+
+            fetch('/cart/checkout', {
+                method: 'POST',
+                credentials: 'include'
+            })
+            .then(response => handleResponse(response, () => {
+                alert('Compra generada exitosamente');
+                location.href = '/catalog';
+            }))
+            .catch(() => alert('Error al generar la compra'));
         }
     </script>
 </body>
 </html>
-

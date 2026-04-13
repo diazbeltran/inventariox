@@ -1,12 +1,11 @@
 <div class="sidebar">
     <div class="logo"><i class="fas fa-boxes"></i> InventarioX</div>
     <a href="/admin/dashboard" class="menu-item<%= section === 'dashboard' ? ' active' : '' %>"><i class="fas fa-chart-bar"></i> Dashboard</a>
-    <a href="/admin/products" class="menu-item<%= section === 'products' ? ' active' : '' %>"><i class="fas fa-box"></i> Productos</a>
+    <a href="/admin/products" class="menu-item<%= section === 'products' ? ' active' : '' %>"><i class="fas fa-layer-group"></i> Inventario</a>
     <a href="/admin/clients" class="menu-item<%= section === 'clients' ? ' active' : '' %>"><i class="fas fa-users"></i> Proveedores</a>
     <a href="/admin/offers" class="menu-item<%= section === 'offers' ? ' active' : '' %>"><i class="fas fa-tag"></i> Ofertas</a>
     <hr style="margin: 20px 0; opacity: 0.3;">
     <form action="/logout" method="POST" style="margin-top: auto;">
-        <button type="submit" class="menu-item" style="background: #dc3545; border: none; cursor: pointer; text-align: left;"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
+        <button type="submit" class="menu-item" style="background: #dc3545; border: none; cursor: pointer; text-align: left;"><i class="fas fa-sign-out-alt"></i> Cerrar Sesion</button>
     </form>
 </div>
-
