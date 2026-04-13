@@ -2,7 +2,7 @@ import express from 'express';
 import session from 'express-session';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { body, param, validationResult } from 'express-validator';
+// body, param, validationResult available globally via app middleware
 import winston from 'winston';
 import authRoutes from './routes/authRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
