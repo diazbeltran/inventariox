@@ -14,13 +14,25 @@ export function getDatabaseConfig() {
     };
   }
 
+  const port = parseInt(process.env.PGPORT || '5432', 10);
+  const ssl = process.env.PGSSL === 'false' ? false : { rejectUnauthorized: false };
+
+  const host = process.env.PGHOST || 'localhost';
+  const database = process.env.PGDATABASE || 'postgres';
+  const user = process.env.PGUSER || 'postgres';
+  const password = process.env.PGPASSWORD || '';
+
+  if (!host || !database || !user) {
+    throw new Error('PGHOST, PGDATABASE, PGUSER required for non-DATABASE_URL mode');
+  }
+
   return {
-    host: requireEnv('PGHOST'),
-    port: parseInt(process.env.PGPORT || '5432', 10),
-    database: requireEnv('PGDATABASE'),
-    user: requireEnv('PGUSER'),
-    password: requireEnv('PGPASSWORD'),
-    ssl: process.env.PGSSL === 'false' ? false : { rejectUnauthorized: false }
+    host,
+    port,
+    database,
+    user,
+    password,
+    ssl
   };
 }
 
