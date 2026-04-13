@@ -4,12 +4,6 @@ import { getDatabaseConfig } from '../config/env.js';
 
 const pool = new Pool(getDatabaseConfig());
 
-const defaultUsers = [
-  { username: 'admin', password: 'admin123', role: 'admin' },
-  { username: 'seller', password: 'seller123', role: 'seller' },
-  { username: 'client', password: 'client123', role: 'client' }
-];
-
 export async function query(text, params = []) {
   return pool.query(text, params);
 }
@@ -119,20 +113,6 @@ async function createTables() {
   `);
 }
 
-async function seedUsers() {
-  for (const user of defaultUsers) {
-    const password = bcrypt.hashSync(user.password, 10);
-    await query(
-      `
-        INSERT INTO users (username, password, role)
-        VALUES ($1, $2, $3)
-        ON CONFLICT (username) DO NOTHING
-      `,
-      [user.username, password, user.role]
-    );
-  }
-}
-
 async function seedInventoryDefaults() {
   await query(
     `
@@ -146,7 +126,6 @@ async function seedInventoryDefaults() {
 
 export async function initializeDatabase() {
   await createTables();
-  await seedUsers();
   await seedInventoryDefaults();
 }
 

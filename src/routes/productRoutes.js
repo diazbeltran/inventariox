@@ -51,12 +51,30 @@ router.get('/products', async (req, res, next) => {
   }
 });
 
-router.post('/products', requireAuth, requireRole(['admin', 'seller']), async (req, res, next) => {
-  try {
-    const { name, price, stock } = req.body;
-    const recipe = parseRecipe(req.body.recipe);
-    const acceptsHtml = req.accepts('html');
-    const isFormSubmission = req.is('application/x-www-form-urlencoded') || acceptsHtml;
+router.post('/products',
+  requireAuth,
+  requireRole(['admin', 'seller']),
+  [
+    body('name').trim().notEmpty().withMessage('Name is required'),
+    body('price').isFloat({ min: 0 }).withMessage('Price must be positive number'),
+    body('stock').optional().isInt({ min: 0 }).withMessage('Stock must be non-negative integer'),
+    param('id').optional().isInt({ min: 1 }).withMessage('Valid ID required')
+  ],
+  async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const acceptsHtml = req.accepts('html');
+      if (acceptsHtml) {
+        return res.status(400).render('add', { errors: errors.array(), user: req.session.user });
+      }
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      const { name, price, stock } = req.body;
+      const recipe = parseRecipe(req.body.recipe);
+      const acceptsHtml = req.accepts('html');
+      const isFormSubmission = req.is('application/x-www-form-urlencoded') || acceptsHtml;
 
     if (!name || !price || (stock === undefined && recipe.length === 0)) {
       if (isFormSubmission) {
