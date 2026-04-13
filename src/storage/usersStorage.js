@@ -1,8 +1,16 @@
-import bcrypt from 'bcrypt';
+import { query } from '../db/index.js';
 
-export const users = [
-  { id: 1, username: 'admin', password: bcrypt.hashSync('admin123', 10), role: 'admin' },
-  { id: 2, username: 'seller', password: bcrypt.hashSync('seller123', 10), role: 'seller' },
-  { id: 3, username: 'client', password: bcrypt.hashSync('client123', 10), role: 'client' }
-];
+function mapUser(row) {
+  return {
+    id: row.id,
+    username: row.username,
+    password: row.password,
+    role: row.role
+  };
+}
+
+export async function findUserByUsername(username) {
+  const result = await query('SELECT id, username, password, role FROM users WHERE username = $1', [username]);
+  return result.rows[0] ? mapUser(result.rows[0]) : null;
+}
 

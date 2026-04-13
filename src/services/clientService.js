@@ -6,23 +6,23 @@ import {
   updateClient
 } from '../storage/clientsStorage.js';
 
-export function listClients() {
+export async function listClients() {
   return getAllClients();
 }
 
-export function getClientById(id) {
+export async function getClientById(id) {
   return findClientById(id);
 }
 
-export function addClient(data) {
+export async function addClient(data) {
   return createClient(data);
 }
 
-export function editClient(id, changes) {
+export async function editClient(id, changes) {
   return updateClient(id, changes);
 }
 
-export function removeClient(id) {
+export async function removeClient(id) {
   return deleteClient(id);
 }
 

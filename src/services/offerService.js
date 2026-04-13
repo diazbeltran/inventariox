@@ -18,11 +18,11 @@ export function isOfferCurrentlyActive(offer) {
   return !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && now >= start && now <= end;
 }
 
-export function listOffers() {
+export async function listOffers() {
   return getAllOffers();
 }
 
-export function getOfferById(id) {
+export async function getOfferById(id) {
   return findOfferById(id);
 }
 
@@ -32,25 +32,27 @@ export function validateOfferDates(startDate, endDate) {
   return !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && start <= end;
 }
 
-export function addOffer(data) {
+export async function addOffer(data) {
   return createOffer(data);
 }
 
-export function editOffer(id, changes) {
+export async function editOffer(id, changes) {
   return updateOffer(id, changes);
 }
 
-export function removeOffer(id) {
+export async function removeOffer(id) {
   return deleteOffer(id);
 }
 
-export function getActiveOfferForProduct(productId) {
-  return getAllOffers().find((offer) => offer.productId === productId && isOfferCurrentlyActive(offer)) || null;
+export async function getActiveOfferForProduct(productId) {
+  const offers = await getAllOffers();
+  return offers.find((offer) => offer.productId === productId && isOfferCurrentlyActive(offer)) || null;
 }
 
-export function getCatalogProductsWithOffers(products) {
+export async function getCatalogProductsWithOffers(products) {
+  const offers = await getAllOffers();
   return products.map((product) => {
-    const offer = getActiveOfferForProduct(product.id);
+    const offer = offers.find((item) => item.productId === product.id && isOfferCurrentlyActive(item));
     return {
       ...product,
       originalPrice: product.price,
@@ -61,7 +63,7 @@ export function getCatalogProductsWithOffers(products) {
   });
 }
 
-export function ensureOfferProductExists(productId) {
+export async function ensureOfferProductExists(productId) {
   return getProductById(parseInt(productId, 10));
 }
 

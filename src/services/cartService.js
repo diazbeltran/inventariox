@@ -1,4 +1,4 @@
-import { getProductById } from './productService.js';
+import { getProductById, removeProductStock } from './productService.js';
 import { getActiveOfferForProduct } from './offerService.js';
 
 function ensureCart(session) {
@@ -6,17 +6,16 @@ function ensureCart(session) {
   return session.cart;
 }
 
-export function getSessionCart(session) {
+export async function getSessionCart(session) {
   const cart = ensureCart(session);
-
-  return cart
-    .map((item) => {
-      const product = getProductById(item.id);
+  const cartItems = await Promise.all(
+    cart.map(async (item) => {
+      const product = await getProductById(item.id);
       if (!product) {
         return null;
       }
 
-      const offer = getActiveOfferForProduct(item.id);
+      const offer = await getActiveOfferForProduct(item.id);
       const discountedPrice = offer ? product.price * (1 - offer.discount / 100) : product.price;
 
       return {
@@ -28,15 +27,17 @@ export function getSessionCart(session) {
         offerDescription: offer ? offer.description : null
       };
     })
-    .filter(Boolean);
+  );
+
+  return cartItems.filter(Boolean);
 }
 
 export function getCartTotal(cartItems) {
   return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 }
 
-export function addItemToCart(session, productId) {
-  const product = getProductById(productId);
+export async function addItemToCart(session, productId) {
+  const product = await getProductById(productId);
   if (!product || product.stock <= 0) {
     return { error: 'Producto no disponible' };
   }
@@ -56,8 +57,8 @@ export function addItemToCart(session, productId) {
   return { ok: true };
 }
 
-export function updateCartItem(session, productId, quantity) {
-  const product = getProductById(productId);
+export async function updateCartItem(session, productId, quantity) {
+  const product = await getProductById(productId);
   if (!product || quantity < 1 || quantity > product.stock) {
     return { error: 'Cantidad inválida' };
   }
@@ -76,14 +77,14 @@ export function removeCartItem(session, productId) {
   session.cart = cart.filter((item) => item.id !== productId);
 }
 
-export function checkoutCart(session) {
+export async function checkoutCart(session) {
   const cart = ensureCart(session);
   if (cart.length === 0) {
     return { error: 'Carrito vacío' };
   }
 
   for (const item of cart) {
-    const product = getProductById(item.id);
+    const product = await getProductById(item.id);
     if (!product) {
       return { error: 'Uno de los productos ya no existe' };
     }
@@ -93,11 +94,9 @@ export function checkoutCart(session) {
   }
 
   for (const item of cart) {
-    const product = getProductById(item.id);
-    product.stock -= item.quantity;
+    await removeProductStock(item.id, item.quantity);
   }
 
   session.cart = [];
   return { ok: true };
 }
-

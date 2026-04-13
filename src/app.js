@@ -31,5 +31,13 @@ app.use(clientRoutes);
 app.use(offerRoutes);
 app.use(pageRoutes);
 
-export default app;
+app.use((error, req, res, next) => {
+  console.error(error);
+  if (res.headersSent) {
+    return next(error);
+  }
 
+  return res.status(500).send('Internal Server Error');
+});
+
+export default app;

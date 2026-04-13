@@ -1,53 +1,65 @@
-const state = {
-  items: [
-    { id: 1, name: 'Proveedor A', email: 'proveedora@example.com', phone: '111-1111', address: 'Calle 1' },
-    { id: 2, name: 'Proveedor B', email: 'proveedorb@example.com', phone: '222-2222', address: 'Calle 2' }
-  ],
-  nextId: 3
-};
+import { query } from '../db/index.js';
 
-export function getAllClients() {
-  return state.items;
-}
-
-export function findClientById(id) {
-  return state.items.find((client) => client.id === id) || null;
-}
-
-export function createClient(data) {
-  const client = {
-    id: state.nextId++,
-    name: data.name,
-    email: data.email,
-    phone: data.phone,
-    address: data.address
+function mapClient(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    phone: row.phone,
+    address: row.address
   };
-
-  state.items.push(client);
-  return client;
 }
 
-export function updateClient(id, changes) {
-  const client = findClientById(id);
-  if (!client) {
+export async function getAllClients() {
+  const result = await query('SELECT id, name, email, phone, address FROM clients ORDER BY id ASC');
+  return result.rows.map(mapClient);
+}
+
+export async function findClientById(id) {
+  const result = await query('SELECT id, name, email, phone, address FROM clients WHERE id = $1', [id]);
+  return result.rows[0] ? mapClient(result.rows[0]) : null;
+}
+
+export async function createClient(data) {
+  const result = await query(
+    `
+      INSERT INTO clients (name, email, phone, address)
+      VALUES ($1, $2, $3, $4)
+      RETURNING id, name, email, phone, address
+    `,
+    [data.name, data.email, data.phone, data.address]
+  );
+
+  return mapClient(result.rows[0]);
+}
+
+export async function updateClient(id, changes) {
+  const current = await findClientById(id);
+  if (!current) {
     return null;
   }
 
-  if (changes.name) client.name = changes.name;
-  if (changes.email) client.email = changes.email;
-  if (changes.phone) client.phone = changes.phone;
-  if (changes.address) client.address = changes.address;
+  const result = await query(
+    `
+      UPDATE clients
+      SET name = $2, email = $3, phone = $4, address = $5
+      WHERE id = $1
+      RETURNING id, name, email, phone, address
+    `,
+    [
+      id,
+      changes.name || current.name,
+      changes.email || current.email,
+      changes.phone || current.phone,
+      changes.address || current.address
+    ]
+  );
 
-  return client;
+  return mapClient(result.rows[0]);
 }
 
-export function deleteClient(id) {
-  const index = state.items.findIndex((client) => client.id === id);
-  if (index === -1) {
-    return false;
-  }
-
-  state.items.splice(index, 1);
-  return true;
+export async function deleteClient(id) {
+  const result = await query('DELETE FROM clients WHERE id = $1', [id]);
+  return result.rowCount > 0;
 }
 

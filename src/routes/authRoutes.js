@@ -11,16 +11,20 @@ router.get('/login', (req, res) => {
   return res.render('login', { error: null });
 });
 
-router.post('/login', (req, res) => {
-  const { username, password } = req.body;
-  const user = authenticateUser(username, password);
+router.post('/login', async (req, res, next) => {
+  try {
+    const { username, password } = req.body;
+    const user = await authenticateUser(username, password);
 
-  if (!user) {
-    return res.render('login', { error: 'Credenciales inválidas' });
+    if (!user) {
+      return res.render('login', { error: 'Credenciales inválidas' });
+    }
+
+    req.session.user = user;
+    return res.redirect('/');
+  } catch (error) {
+    return next(error);
   }
-
-  req.session.user = user;
-  return res.redirect('/');
 });
 
 router.post('/logout', (req, res) => {
