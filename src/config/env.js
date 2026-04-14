@@ -28,6 +28,5 @@ export function getDatabaseConfig() {
   };
 }
 
-console.log('✅ Config DB lista (keys: DATABASE_URL=', !!process.env.DATABASE_URL, ', PGHOST=', !!process.env.PGHOST, ')');
-}
+console.log('✅ Config DB lista (DATABASE_URL presente:', !!process.env.DATABASE_URL, ', PGHOST presente:', !!process.env.PGHOST, ')');
 
