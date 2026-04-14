@@ -28,8 +28,9 @@ app.use(helmet());
 app.use(helmet.contentSecurityPolicy({
   directives: {
     defaultSrc: ["'self'"],
-    styleSrc: ["'self'", "'unsafe-inline'"],
-    scriptSrc: ["'self'", "'unsafe-inline'"]
+    styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
+    scriptSrc: ["'self'", "'unsafe-inline'"],
+    fontSrc: ["'self'", "https://cdnjs.cloudflare.com"]
   }
 }));
 
