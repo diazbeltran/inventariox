@@ -2,7 +2,17 @@ import { Pool } from 'pg';
 import bcrypt from 'bcrypt';
 import { getDatabaseConfig } from '../config/env.js';
 
-const pool = new Pool(getDatabaseConfig());
+const config = getDatabaseConfig();
+console.log('🔗 Creando Pool con config:', JSON.stringify(config, (k,v) => k==='password' ? '***' : v));
+const pool = new Pool(config);
+
+// Manejo errores pool
+pool.on('error', (err) => {
+  console.error('❌ Error Pool PG (idle client):', err.message);
+  console.error('Code:', err.code, 'Detail:', err.detail);
+});
+
+pool.on('connect', () => console.log('🔗 Nueva conexión PG establecida'));
 
 const defaultUsers = [
   { username: 'admin', password: 'admin123', role: 'admin' },
@@ -146,27 +156,43 @@ async function seedInventoryDefaults() {
 
 export async function initializeDatabase() {
   console.log('🚀 Iniciando inicialización DB...');
+  
   try {
     // Test conexión
     console.log('🔗 Testeando conexión DB...');
-    await query('SELECT 1 as test');
-    console.log('✅ Conexión DB OK');
+    const testResult = await query('SELECT 1 as test');
+    console.log('✅ Conexión DB OK, test result:', testResult.rows[0]);
+  } catch (connError) {
+    console.error('💥 FALLO CONEXIÓN DB:', connError.message);
+    console.error('Code:', connError.code, 'Stack:', connError.stack);
+    throw new Error(`Conexión DB falló: ${connError.message}`);
+  }
 
+  try {
     await createTables();
-    console.log('✅ Tablas creadas');
+    console.log('✅ Tablas creadas/verificadas');
+  } catch (tableError) {
+    console.error('💥 FALLO creando tablas:', tableError.message);
+    throw tableError;
+  }
 
+  try {
     await seedUsers();
-    console.log('✅ Users seeded');
+    console.log('✅ Users verificados/seeded');
+  } catch (userError) {
+    console.error('💥 FALLO seeding users:', userError.message);
+    throw userError;
+  }
 
+  try {
     await seedInventoryDefaults();
     console.log('✅ Inventario inicial OK');
-
-    console.log('✅ DB inicializada completamente');
-  } catch (error) {
-    console.error('❌ Error inicializando DB:', error.message);
-    console.error('Stack:', error.stack);
-    throw error;
+  } catch (invError) {
+    console.error('💥 FALLO inventario inicial:', invError.message);
+    throw invError;
   }
+
+  console.log('✅ DB inicializada completamente');
 }
 
 export async function closeDatabase() {

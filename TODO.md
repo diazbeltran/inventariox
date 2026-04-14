@@ -1,15 +1,21 @@
-# TODO: Fixar Conexión DB en Render - COMPLETADO ✅
+# TODO: Fix Render DB Connection & Login Issue
 
-**Logs Render:**
-- DB conecta OK
-- Tables creadas
-- Solo fix "exited early": bind 0.0.0.0 OK ahora.
+✅ 1. Plan & gather info
+✅ 2. Create TODO.md  
+✅ 3. src/config/env.js - Detalle logs
+✅ 4. src/db/index.js - Manejo errores Pool
+✅ 5. index.js - Graceful fail & shutdown
+✅ 6. src/app.js - Session segura + /health
+✅ 7. render-env.example
 
-Pasos user:
-1. git add index.js README.md 
-2. git commit -m "fix render bind 0.0.0.0"
-3. git push 
-4. Render redeploy auto.
+⏳ 8. Test local: npm start (edita .env con tu PG local)
+   → Debe mostrar '✅ Conexión DB OK'
+   → http://localhost:3000/health → OK
 
-App LIVE + DB consulta OK!
+🔄 9. Render:
+   1. Copia DATABASE_URL interna de tu Postgres Render
+   2. SESSION_SECRET fuerte
+   3. Deploy → logs: 'DATABASE_URL detectada' + 'Conexión OK'
+   4. /health OK → login admin/admin123
 
+🏁 10. attempt_completion

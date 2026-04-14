@@ -1,0 +1,24 @@
+# Configuración para Render.com - Copia estos valores al Dashboard > Environment
+
+# 1. Crea Postgres DB en Render.com → Copia INTERNAL DATABASE URL:
+# DATABASE_URL=postgres://user:pass@host:5432/dbname?sslmode=require
+
+# 2. SESSION_SECRET (genera uno fuerte):
+# SESSION_SECRET=tu_clave_super_secreta_32_caracteres_minimo_123456
+
+# 3. Opcional - Deshabilitar SSL estricto si problemas:
+# PGSSL=false
+
+# Instrucciones:
+# 1. Render Dashboard → Tu Web Service → Environment
+# 2. Add Environment Variable → Key: DATABASE_URL, Value: [tu URL interna]
+# 3. Add SESSION_SECRET
+# 4. Save → Manual Deploy o auto-deploy
+# 5. Logs: Busca 'DATABASE_URL detectada', 'Conexión DB OK'
+# 6. Test: https://tu-app.onrender.com/health → debe dar {status: 'OK', db: 'connected'}
+# 7. Login: admin / admin123
+
+# Problemas comunes:
+# - SSL: Usa sslmode=require en URL o PGSSL=false
+# - DB vacía: Logs muestran 'Users seeded'
+# - Timeout: Aumenta max pool size si tráfico alto

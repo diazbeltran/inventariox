@@ -7,26 +7,33 @@ function requireEnv(name) {
 }
 
 export function getDatabaseConfig() {
-  console.log('🔍 Configurando DB... Detectando entorno:', process.env.NODE_ENV || 'local');
+  console.log('🔍 Configurando DB... Entorno:', process.env.NODE_ENV || 'local');
+  console.log('DB vars detectadas - DATABASE_URL:', !!process.env.DATABASE_URL, 'PGHOST:', !!process.env.PGHOST);
   
   if (process.env.DATABASE_URL) {
-    console.log('✅ Usando DATABASE_URL (Render/Producción)');
+    const maskedUrl = process.env.DATABASE_URL.replace(/:(.*?)@/,' :***@');
+    console.log('✅ DATABASE_URL detectada (Render):', maskedUrl);
+    if (!process.env.DATABASE_URL.startsWith('postgres://') && !process.env.DATABASE_URL.startsWith('postgresql://')) {
+      console.warn('⚠️ DATABASE_URL no parece Postgres URI válida');
+    }
     return {
       connectionString: process.env.DATABASE_URL,
       ssl: process.env.PGSSL === 'false' ? false : { rejectUnauthorized: false }
     };
   }
 
-  console.log('⚠️  Usando vars individuales PG (local dev)');
-  return {
+  console.log('⚠️ Usando vars PG individuales (local)');
+  const config = {
     host: requireEnv('PGHOST'),
     port: parseInt(process.env.PGPORT || '5432', 10),
     database: requireEnv('PGDATABASE'),
     user: requireEnv('PGUSER'),
     password: requireEnv('PGPASSWORD'),
-    ssl: process.env.PGSSL === 'false' ? false : { rejectUnauthorized: false }
+    ssl: { rejectUnauthorized: false }
   };
+  console.log('Config local - Host:', config.host, 'DB:', config.database);
+  return config;
 }
 
-console.log('✅ Config DB lista (DATABASE_URL presente:', !!process.env.DATABASE_URL, ', PGHOST presente:', !!process.env.PGHOST, ')');
+console.log('✅ Config DB lista!');
 

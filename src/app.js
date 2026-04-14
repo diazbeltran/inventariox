@@ -14,12 +14,27 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   session({
-    secret: 'inventariox-secret-key',
+    secret: process.env.SESSION_SECRET || 'inventariox-dev-secret-fallback',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false }
+    cookie: { 
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 24 * 60 * 60 * 1000 // 24h
+    }
   })
 );
+
+// Health check endpoint para Render
+app.get('/health', async (req, res) => {
+  try {
+    const { query: dbQuery } = await import('./db/index.js');
+    await dbQuery('SELECT 1');
+    res.status(200).json({ status: 'OK', db: 'connected', timestamp: new Date().toISOString() });
+  } catch (error) {
+    console.error('Health check DB fail:', error.message);
+    res.status(500).json({ status: 'ERROR', db: 'disconnected', error: error.message });
+  }
+});
 
 app.set('view engine', 'ejs');
 app.set('views', './views');
