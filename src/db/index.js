@@ -145,9 +145,28 @@ async function seedInventoryDefaults() {
 }
 
 export async function initializeDatabase() {
-  await createTables();
-  await seedUsers();
-  await seedInventoryDefaults();
+  console.log('🚀 Iniciando inicialización DB...');
+  try {
+    // Test conexión
+    console.log('🔗 Testeando conexión DB...');
+    await query('SELECT 1 as test');
+    console.log('✅ Conexión DB OK');
+
+    await createTables();
+    console.log('✅ Tablas creadas');
+
+    await seedUsers();
+    console.log('✅ Users seeded');
+
+    await seedInventoryDefaults();
+    console.log('✅ Inventario inicial OK');
+
+    console.log('✅ DB inicializada completamente');
+  } catch (error) {
+    console.error('❌ Error inicializando DB:', error.message);
+    console.error('Stack:', error.stack);
+    throw error;
+  }
 }
 
 export async function closeDatabase() {
