@@ -2,41 +2,63 @@ import { Pool } from 'pg';
 import bcrypt from 'bcrypt';
 import { getDatabaseConfig } from '../config/env.js';
 import logger from '../utils/logger.js';
+import { initSQLite, sqliteQuery, sqliteTransaction, closeSQLite, dbReady as sqliteReady } from './sqlite.js';
 
-const pool = new Pool(getDatabaseConfig());
+// Try PG first
+let pool;
+let isPostgres = false;
+let dbReady = false;
+
+try {
+  pool = new Pool(getDatabaseConfig());
+  // Quick connect test
+  await pool.query('SELECT 1');
+  isPostgres = true;
+  logger.info('Postgres connection established');
+} catch (error) {
+  logger.warn('Postgres unavailable, falling back to SQLite', { error: error.message });
+}
 
 pool.on('error', (err) => {
   logger.error('Pool lost DB connection', { message: err.message, stack: err.stack });
 });
 
 export async function query(text, params = []) {
-  try {
-    const result = await pool.query(text, params);
-  logger.debug(`DB query OK: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
-    return result;
-  } catch (error) {
-    logger.error('DB query failed', {
-      sql: text.substring(0, 50),
-      error: error.message,
-      params: params ? params.map(p => typeof p === 'string' ? '***' : p) : undefined
-    });
-    throw error;
+  if (isPostgres) {
+    try {
+      const result = await pool.query(text, params);
+      logger.debug(`PG query OK: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
+      return result;
+    } catch (error) {
+      logger.error('PG query failed', {
+        sql: text.substring(0, 50),
+        error: error.message,
+        params: params ? params.map(p => typeof p === 'string' ? '***' : p) : undefined
+      });
+      throw error;
+    }
+  } else {
+    return sqliteQuery(text, params);
   }
 }
 
 export async function withTransaction(callback) {
-  const client = await pool.connect();
-
-  try {
-    await client.query('BEGIN');
-    const result = await callback(client);
-    await client.query('COMMIT');
-    return result;
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
+  if (isPostgres) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const result = await callback(client);
+      await client.query('COMMIT');
+      return result;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  } else {
+    // SQLite runner = dbInstance, sqliteQuery(sql, params)
+    return sqliteTransaction(callback);
   }
 }
 
@@ -143,21 +165,34 @@ async function seedInventoryDefaults() {
 export async function initializeDatabase() {
   logger.info('Starting DB initialization');
   try {
-    // Test connection
-    await query('SELECT 1 as ping');
-    logger.info('DB connection test passed');
+    if (!isPostgres) {
+      await initSQLite();
+      dbReady = sqliteReady;
+      return;
+    }
+    // PG test already done at module load
+    logger.info('Postgres connection test passed (module load)');
     
     await createTables();
     logger.info('Tables created/verified');
     
     await seedInventoryDefaults();
     logger.info('Seed data completed');
+    dbReady = true;
   } catch (error) {
     logger.error('DB initialization failed', { error: error.message, stack: error.stack });
-    throw error;
+    dbReady = false;
+    // Don't throw - graceful
   }
 }
 
+export { dbReady, isPostgres };
+
+
 export async function closeDatabase() {
-  await pool.end();
+  if (isPostgres && pool) {
+    await pool.end();
+  } else {
+    closeSQLite();
+  }
 }

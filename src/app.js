@@ -10,6 +10,7 @@ import clientRoutes from './routes/clientRoutes.js';
 import offerRoutes from './routes/offerRoutes.js';
 import pageRoutes from './routes/pageRoutes.js';
 import productRoutes from './routes/productRoutes.js';
+import { dbReady } from './db/index.js';
 
 const app = express();
 
@@ -63,6 +64,20 @@ app.use(cartRoutes);
 app.use(clientRoutes);
 app.use(offerRoutes);
 app.use(pageRoutes);
+
+// DB Status middleware/route
+app.get('/db-status', (req, res) => {
+  res.json({ dbReady: dbReady, isPostgres });
+});
+
+// Warn on DB ops if not ready
+app.use((req, res, next) => {
+  if (!dbReady && req.path.startsWith('/api/')) {
+    logger.warn('API access denied: DB not ready', { path: req.path });
+    return res.status(503).json({ error: 'Database not ready. Use /db-status to check.' });
+  }
+  next();
+});
 
 app.use((error, req, res, next) => {
   logger.error('App error', { error: error.message, stack: error.stack, url: req.url, method: req.method });
