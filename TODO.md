@@ -1,27 +1,15 @@
-# Mejoras InventarioX - Progreso
+# Debug Deploy Render & DB Logs - InventarioX
 
-## 1. Instalar dependencias [COMPLETADO]
-- helmet, express-rate-limit, express-validator, dotenv, winston, eslint
+## Plan Aprobado: Debug DB conexión para Render + logs winston
 
-## 2. Configurar .env y dotenv [COMPLETADO]
-- Crear .env.example
-- Editar index.js
+**Pendientes previos movidos abajo.**
 
-## 3. Seguridad app.js [COMPLETADO]
-- Session secret env
-- Agregar Helmet, rate-limit, CORS
-
-## 4. Limpiar DB init [COMPLETADO]
-- src/db/index.js: remover defaultUsers (syntax fix)
-
-## 5. Validación rutas [COMPLETADO PARCIAL]
-- express-validator en productRoutes POST /products (ejemplo)
-
-## 6. Logging winston [PENDIENTE]
-
-## 7. ESLint setup [COMPLETADO]
-- .eslintrc.cjs, package.json scripts, gitignore
-
-## 8. Tests [PENDIENTE]
-
-## 9. Verificar npm start [PENDIENTE]
+### 1. [PENDIENTE] Crear/Actualizar TODO.md ✅ HECHO
+### 2. [COMPLETADO] Editar src/app.js: Exportar logger, fix validationResult middleware, agregar startup logs ✅
+### 3. [COMPLETADO] Editar src/db/index.js: Logs en Pool connect, query(), initializeDatabase() usando logger ✅
+### 4. [COMPLETADO] Editar index.js: Más logs en init/server start ✅
+### 5. [PENDIENTE] Test local: npm start, login admin/123123, check error.log/console
+### 6. [PENDIENTE] Editar src/routes/authRoutes.js: Logs en login/register
+### 7. [PENDIENTE] Instrucciones Render: DATABASE_URL, SESSION_SECRET
+### 8. [PENDIENTE] Completar validación rutas, winston full, tests
+### 9. [COMPLETADO] Actualizar progreso al final de cada paso

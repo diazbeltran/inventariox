@@ -1,11 +1,27 @@
 import { Pool } from 'pg';
 import bcrypt from 'bcrypt';
 import { getDatabaseConfig } from '../config/env.js';
+import logger from '../utils/logger.js';
 
 const pool = new Pool(getDatabaseConfig());
 
+pool.on('error', (err) => {
+  logger.error('Pool lost DB connection', { message: err.message, stack: err.stack });
+});
+
 export async function query(text, params = []) {
-  return pool.query(text, params);
+  try {
+    const result = await pool.query(text, params);
+  logger.debug(`DB query OK: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
+    return result;
+  } catch (error) {
+    logger.error('DB query failed', {
+      sql: text.substring(0, 50),
+      error: error.message,
+      params: params ? params.map(p => typeof p === 'string' ? '***' : p) : undefined
+    });
+    throw error;
+  }
 }
 
 export async function withTransaction(callback) {
@@ -125,8 +141,21 @@ async function seedInventoryDefaults() {
 }
 
 export async function initializeDatabase() {
-  await createTables();
-  await seedInventoryDefaults();
+  logger.info('Starting DB initialization');
+  try {
+    // Test connection
+    await query('SELECT 1 as ping');
+    logger.info('DB connection test passed');
+    
+    await createTables();
+    logger.info('Tables created/verified');
+    
+    await seedInventoryDefaults();
+    logger.info('Seed data completed');
+  } catch (error) {
+    logger.error('DB initialization failed', { error: error.message, stack: error.stack });
+    throw error;
+  }
 }
 
 export async function closeDatabase() {

@@ -1,34 +1,15 @@
 import express from 'express';
+import { validationResult } from 'express-validator';
 import session from 'express-session';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-// body, param, validationResult available globally via app middleware
-import winston from 'winston';
+import logger from './utils/logger.js';
 import authRoutes from './routes/authRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import clientRoutes from './routes/clientRoutes.js';
 import offerRoutes from './routes/offerRoutes.js';
 import pageRoutes from './routes/pageRoutes.js';
 import productRoutes from './routes/productRoutes.js';
-
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.errors({ stack: true }),
-    winston.format.json()
-  ),
-  transports: [
-    new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'combined.log' })
-  ]
-});
-
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.simple()
-  }));
-}
 
 const app = express();
 
@@ -67,6 +48,15 @@ app.use(
 app.set('view engine', 'ejs');
 app.set('views', './views');
 
+app.use((req, res, next) => {
+  const err = validationResult(req);
+  if (!err.isEmpty()) {
+    logger.warn('Validation errors', { errors: err.array(), url: req.url });
+    return res.status(400).json({ errors: err.array() });
+  }
+  next();
+});
+
 app.use(authRoutes);
 app.use(productRoutes);
 app.use(cartRoutes);
@@ -74,16 +64,8 @@ app.use(clientRoutes);
 app.use(offerRoutes);
 app.use(pageRoutes);
 
-app.use((req, res, next) => {
-  const err = validationResult(req);
-  if (!err.isEmpty()) {
-    return res.status(400).json({ errors: err.array() });
-  }
-  next();
-});
-
 app.use((error, req, res, next) => {
-  logger.error(error);
+  logger.error('App error', { error: error.message, stack: error.stack, url: req.url, method: req.method });
   if (res.headersSent) {
     return next(error);
   }
